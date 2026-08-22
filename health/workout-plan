@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sample Workout Calculator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{ --sub:#5C6C7B; --black:#111111; --line:#E3E7EA; --bg-card:#F7F8F9; }
+  *{box-sizing:border-box;}
+  body{ font-family:'Open Sans', sans-serif; color:var(--black); background:#ffffff; margin:0; padding:32px 16px 64px; }
+  .app{ max-width:820px; margin:0 auto; }
+  h1{ font-size:26px; font-weight:700; color:var(--black); margin:0 0 4px; }
+  .tagline{ color:var(--sub); font-size:14px; margin:0 0 28px; }
+  .panel{ display:block; }
+  h2{ font-size:20px; font-weight:700; color:var(--black); margin:0 0 4px; }
+  .panel-desc{ color:var(--sub); font-size:13.5px; margin:0 0 24px; line-height:1.5; }
+  .field{ margin-bottom:18px; }
+  .field-row{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px; }
+  label{ font-size:14px; font-weight:600; color:var(--black); }
+  .value-badge{ font-size:14px; font-weight:700; color:var(--sub); min-width:70px; text-align:right; }
+  input[type=range]{ width:100%; accent-color:var(--sub); height:4px; cursor:pointer; }
+  select{ width:100%; font-family:inherit; font-size:14px; font-weight:600; color:var(--sub); padding:9px 10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+  select:focus{ outline:2px solid var(--sub); outline-offset:1px; }
+  .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  @media(max-width:560px){ .grid2{ grid-template-columns:1fr; } }
+  .btn{ font-family:inherit; font-size:13px; font-weight:700; color:#fff; background:var(--sub); border:none; border-radius:6px; padding:9px 16px; cursor:pointer; }
+  .btn-row{ display:flex; gap:8px; margin:4px 0 18px; }
+  .day-card{ border:1px solid var(--line); border-radius:8px; padding:16px; margin-bottom:14px; }
+  .day-card h4{ margin:0 0 4px; font-size:15px; color:var(--black); }
+  .day-card .scheme{ font-size:12px; color:var(--sub); font-weight:700; margin-bottom:10px; }
+  .day-card ul{ margin:0; padding-left:18px; }
+  .day-card li{ font-size:14px; color:var(--black); margin-bottom:4px; }
+  .day-card li span{ color:var(--sub); font-weight:600; }
+  .note{ font-size:12px; color:var(--sub); margin-top:14px; line-height:1.5; }
+</style>
+</head>
+<body>
+<div class="app">
+  <h1>Wagner Wealth and Health</h1>
+  <p class="tagline">Financial and fitness calculators</p>
+  <section id="workout" class="panel">
+    <h2>Sample Workout Calculator</h2>
+    <p class="panel-desc">Get a sample weekly split based on your available days and goal. A starting point, not a personalized program.</p>
+    <div class="field">
+      <div class="field-row"><label>Days per week</label><span class="value-badge" id="wk_days_val">4</span></div>
+      <input type="range" id="wk_days" min="2" max="6" value="4">
+    </div>
+    <div class="grid2">
+      <div class="field">
+        <label>Primary goal</label>
+        <select id="wk_goal">
+          <option value="strength">Strength</option>
+          <option value="hypertrophy" selected>Muscle growth (hypertrophy)</option>
+          <option value="fatloss">Fat loss</option>
+          <option value="general">General fitness</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Experience level</label>
+        <select id="wk_level">
+          <option value="beginner">Beginner</option>
+          <option value="intermediate" selected>Intermediate</option>
+          <option value="advanced">Advanced</option>
+        </select>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn" id="wk_generate">Generate plan</button>
+    </div>
+    <div id="wk_output"></div>
+  </section>
+</div>
+<script>
+const splitByDays = {
+  2: ['Full Body A','Full Body B'],
+  3: ['Full Body A','Full Body B','Full Body C'],
+  4: ['Upper A','Lower A','Upper B','Lower B'],
+  5: ['Push','Pull','Legs','Upper','Lower'],
+  6: ['Push','Pull','Legs','Push','Pull','Legs']
+};
+
+const exercisePools = {
+  'Full Body': ['Back Squat','Flat Bench Press','Bent-over Row','Overhead Press','Romanian Deadlift','Lat Pulldown','Plank'],
+  'Upper': ['Flat Bench Press','Overhead Press','Lat Pulldown','Seated Cable Row','Dumbbell Curl','Tricep Pushdown','Lateral Raise'],
+  'Lower': ['Back Squat','Romanian Deadlift','Leg Press','Walking Lunge','Standing Calf Raise','Hip Thrust','Hanging Knee Raise'],
+  'Push': ['Flat Bench Press','Overhead Press','Incline Dumbbell Press','Dips','Lateral Raise','Tricep Pushdown'],
+  'Pull': ['Deadlift','Pull-up','Bent-over Row','Seated Cable Row','Face Pull','Dumbbell Curl'],
+  'Legs': ['Back Squat','Romanian Deadlift','Leg Press','Walking Lunge','Standing Calf Raise','Leg Curl']
+};
+
+const goalScheme = {
+  strength: {sets:4, reps:'3–5', rest:'2–3 min', label:'Strength', note:'Prioritize progressive overload on the main lifts; rest fully between sets.'},
+  hypertrophy: {sets:3, reps:'8–12', rest:'60–90 sec', label:'Hypertrophy', note:'Aim for 1–2 reps shy of failure most sets to build volume over time.'},
+  fatloss: {sets:3, reps:'12–15', rest:'30–45 sec', label:'Fat loss', note:'Keep rest shorter to raise the metabolic demand; add 10–15 min of conditioning after lifting if time allows.'},
+  general: {sets:3, reps:'10–12', rest:'60 sec', label:'General fitness', note:'Balanced effort across strength and endurance qualities.'}
+};
+
+const levelExerciseCount = { beginner:5, intermediate:6, advanced:7 };
+
+document.getElementById('wk_days').addEventListener('input', ()=>{
+  document.getElementById('wk_days_val').textContent = document.getElementById('wk_days').value;
+});
+
+function generateWorkoutPlan(){
+  const days = +document.getElementById('wk_days').value;
+  const goal = document.getElementById('wk_goal').value;
+  const level = document.getElementById('wk_level').value;
+
+  const split = splitByDays[days];
+  const scheme = goalScheme[goal];
+  const exCount = levelExerciseCount[level];
+
+  const out = document.getElementById('wk_output');
+  out.innerHTML = '';
+
+  split.forEach((dayName, idx)=>{
+    const poolKey = dayName.replace(/ [AB]$/, '');
+    const pool = exercisePools[poolKey] || exercisePools['Full Body'];
+    const exercises = pool.slice(0, Math.min(exCount, pool.length));
+
+    const card = document.createElement('div');
+    card.className = 'day-card';
+    card.innerHTML = `
+      <h4>Day ${idx+1} — ${dayName}</h4>
+      <div class="scheme">${scheme.label} · ${scheme.sets} sets × ${scheme.reps} reps · rest ${scheme.rest}</div>
+      <ul>${exercises.map(e=>`<li>${e} — <span>${scheme.sets}×${scheme.reps}</span></li>`).join('')}</ul>
+    `;
+    out.appendChild(card);
+  });
+
+  const noteEl = document.createElement('p');
+  noteEl.className = 'note';
+  noteEl.textContent = scheme.note + ' Sample program for general guidance — adjust based on how your body responds, and check with a professional before starting a new training plan.';
+  out.appendChild(noteEl);
+}
+document.getElementById('wk_generate').addEventListener('click', generateWorkoutPlan);
+generateWorkoutPlan();
+</script>
+</body>
+</html>
