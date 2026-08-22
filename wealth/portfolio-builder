@@ -18,14 +18,14 @@
     --text-muted: #5C6C7B;
     /* General UI accent (sliders, focus rings, numbers) */
     --accent: #5C6C7B;
-    /* Stocks family (green variants): Market, Small-Cap Value, Momentum */
-    --gold: #3D7A4A;
-    --rust: #6FA179;
-    --olive: #245C34;
-    /* Bonds family (yellow/gold variants): Core, Defensive, Yield */
-    --steel: #B8952E;
-    --defensive: #D4B860;
-    --yield: #8C6D1B;
+    /* Stocks family (blue variants): Market, Small-Cap Value, Momentum */
+    --gold: #2B6CB0;
+    --rust: #4299E1;
+    --olive: #1A365D;
+    /* Bonds family (orange variants): Core, Defensive, Yield */
+    --steel: #DD6B20;
+    --defensive: #ED8936;
+    --yield: #C05621;
     /* Satellite allocation */
     --plum: #7C5A9E;
     --font-display: 'Open Sans', sans-serif;
