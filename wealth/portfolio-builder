@@ -19,13 +19,13 @@
     /* General UI accent (sliders, focus rings, numbers) */
     --accent: #5C6C7B;
     /* Stocks family (blue variants): Market, Small-Cap Value, Momentum */
-    --gold: #2B6CB0;
-    --rust: #4299E1;
-    --olive: #1A365D;
+    --gold: #3F6EA6;
+    --rust: #6C93BE;
+    --olive: #274763;
     /* Bonds family (orange variants): Core, Defensive, Yield */
-    --steel: #DD6B20;
-    --defensive: #ED8936;
-    --yield: #C05621;
+    --steel: #C17B3A;
+    --defensive: #D9A066;
+    --yield: #96551F;
     /* Satellite allocation */
     --plum: #7C5A9E;
     --font-display: 'Open Sans', sans-serif;
@@ -59,6 +59,18 @@
     .allocator__body { padding: 52px 60px; }
     h1 { font-size: 36px; }
   }
+  .header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px;
+    margin-bottom: 28px;
+  }
+  @media (max-width: 480px) {
+    .header-row { flex-direction: column-reverse; align-items: flex-start; gap: 14px; }
+    .brand-logo { height: 48px; }
+  }
+  .header-text { flex: 1 1 auto; min-width: 0; }
   h1 {
     font-family: var(--font-display);
     font-weight: 600;
@@ -68,11 +80,21 @@
     letter-spacing: -0.01em;
     color: var(--text-hi);
   }
+  .brand-header {
+    display: inline-block;
+    flex-shrink: 0;
+    line-height: 0;
+    text-decoration: none;
+    transition: opacity 150ms ease;
+  }
+  .brand-header:hover, .brand-header:focus-visible { opacity: 0.75; }
+  .brand-header:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+  .brand-logo { height: 60px; width: auto; display: block; }
   .dek {
     font-size: 14.5px;
     line-height: 1.55;
     color: var(--text-lo);
-    margin: 0 0 36px;
+    margin: 0;
     max-width: 50ch;
   }
   .control-block { margin-bottom: 26px; }
@@ -382,6 +404,26 @@
   .fun-money-row .swatch { width: 8px; height: 8px; border-radius: 2px; }
   .fun-money-row .fun-money-label { font-weight: 600; color: var(--text-hi); font-family: var(--font-body); }
   .fun-money-row .fun-money-value { color: var(--text-hi); font-weight: 600; }
+  .toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 30px 0 0;
+  }
+  .btn {
+    font-family: var(--font-body);
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--text-lo);
+    background: #FFFFFF;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 9px 14px;
+    cursor: pointer;
+    transition: border-color 150ms ease, color 150ms ease;
+  }
+  .btn:hover { border-color: var(--accent); color: var(--accent); }
+  .btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   .foot {
     font-size: 11.5px;
     color: var(--text-muted);
@@ -398,8 +440,15 @@
 <body>
 <div class="allocator">
   <div class="allocator__body">
-    <h1>Portfolio Builder</h1>
-    <p class="dek">Get matched with a diversified portfolio tailored to your time horizon and investment preferences.</p>
+    <div class="header-row">
+      <div class="header-text">
+        <h1>Portfolio Builder</h1>
+        <p class="dek">Get matched with a diversified portfolio tailored to your time horizon and investment preferences.</p>
+      </div>
+      <a class="brand-header" href="https://wagnerwh.com" target="_blank" rel="noopener noreferrer" aria-label="Wagner Wealth and Health home">
+        <img class="brand-logo" src="https://assets.wagnerwh.com/logo-complete.png" alt="Wagner Wealth and Health" loading="lazy">
+      </a>
+    </div>
     <label class="checkbox-row" for="retiredToggle">
       <input type="checkbox" id="retiredToggle">
       Currently Retired
@@ -502,6 +551,7 @@
     </label>
     <div class="bar" id="barOverview" role="img" aria-label="Allocation breakdown"></div>
     <div class="legend" id="legendOverview"></div>
+
     <div class="results-grid">
       <section class="section section--equities">
         <div class="section-header">
@@ -523,6 +573,12 @@
       <span class="fun-money-label">Satellite Allocation</span>
       <span class="fun-money-value" id="funMoneyDisplay"></span>
     </div>
+    <div class="toolbar">
+      <button type="button" class="btn" id="downloadCsvBtn">Download CSV</button>
+      <button type="button" class="btn" id="copySummaryBtn">Copy Summary</button>
+      <button type="button" class="btn" id="copyLinkBtn">Copy Link</button>
+    </div>
+
     <p class="foot">Wagner Wealth and Health &middot; Educational Tool &middot; Not Personalized Investment Advice</p>
   </div>
 </div>
@@ -587,11 +643,15 @@
   var fiTotalEl = document.getElementById('fiTotal');
   var funMoneySection = document.getElementById('funMoneySection');
   var funMoneyDisplayEl = document.getElementById('funMoneyDisplay');
+  var downloadCsvBtn = document.getElementById('downloadCsvBtn');
+  var copySummaryBtn = document.getElementById('copySummaryBtn');
+  var copyLinkBtn = document.getElementById('copyLinkBtn');
   var riskTicks = document.querySelectorAll('#riskTicks span');
   var portfolioComplexityTicks = document.querySelectorAll('#portfolioComplexityTicks span');
   var equityComplexityTicks = document.querySelectorAll('#equityComplexityTicks span');
   var fiComplexityTicks = document.querySelectorAll('#fiComplexityTicks span');
   var lastOverviewKey = null;
+  var lastRender = null; // cache of the most recently rendered models, for CSV/clipboard export
 
   function computeBase(risk, age, retireAge, funMoneyPct, isRetired) {
     var riskFactor = (risk - 1) / 4;
@@ -839,6 +899,7 @@
       rowEl.parentNode.insertBefore(buildDescRow(key), rowEl.nextSibling);
     }
   }
+
   function renderTable(model, tableBodyEl, balance) {
     tableBodyEl.innerHTML = '';
     var total = 0;
@@ -880,6 +941,152 @@
     });
     return total;
   }
+  function csvEscape(s) {
+    s = String(s);
+    if (s.indexOf(',') !== -1 || s.indexOf('"') !== -1 || s.indexOf('\n') !== -1) {
+      return '"' + s.replace(/"/g, '""') + '"';
+    }
+    return s;
+  }
+
+  function forEachRow(fn) {
+    if (!lastRender) return;
+    var balance = lastRender.balance;
+    [['Stocks', lastRender.equityModel], ['Bonds', lastRender.fiModel]].forEach(function (pair) {
+      var sectionName = pair[0], model = pair[1];
+      model.displayCategories.forEach(function (dc) {
+        model.tickers.filter(function (t) { return t.dispCat === dc.key; }).forEach(function (t) {
+          fn(sectionName, dc.label, t.key, t.label, t.pct, balance * t.pct / 100);
+        });
+      });
+    });
+    if (lastRender.base.funMoney > 0) {
+      fn('Satellite', 'Satellite Allocation', '', 'Individual stocks, crypto, options, etc.', lastRender.base.funMoney, balance * lastRender.base.funMoney / 100);
+    }
+  }
+
+  function buildCSV() {
+    var rows = [['Section', 'Category', 'Ticker', 'Description', 'Percent', 'Amount']];
+    forEachRow(function (section, category, ticker, desc, pct, amt) {
+      rows.push([section, category, ticker, desc, pct.toFixed(2) + '%', fmtMoney(amt)]);
+    });
+    return rows.map(function (r) { return r.map(csvEscape).join(','); }).join('\n');
+  }
+
+  function downloadCSV() {
+    var csv = buildCSV();
+    var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'portfolio-builder-allocation.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+  }
+
+  function buildSummaryText() {
+    if (!lastRender) return '';
+    var lines = [];
+    lines.push('Portfolio Builder \u2014 Wagner Wealth and Health');
+    lines.push('Balance: ' + fmtMoney(lastRender.balance));
+    lines.push('');
+    lines.push(['Section', 'Category', 'Ticker', 'Description', 'Percent', 'Amount'].join('\t'));
+    forEachRow(function (section, category, ticker, desc, pct, amt) {
+      lines.push([section, category, ticker, desc, pct.toFixed(2) + '%', fmtMoney(amt)].join('\t'));
+    });
+    return lines.join('\n');
+  }
+
+  function copyText(text, btn, successLabel) {
+    var original = btn.textContent;
+    function flash() {
+      btn.textContent = successLabel;
+      setTimeout(function () { btn.textContent = original; }, 1800);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(flash, function () { fallbackCopy(text); flash(); });
+    } else {
+      fallbackCopy(text);
+      flash();
+    }
+  }
+
+  function fallbackCopy(text) {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    try { document.execCommand('copy'); } catch (e) {}
+    document.body.removeChild(ta);
+  }
+
+  // ---- Shareable state (URL query params) ----
+  var STATE_KEYS = ['r', 'a', 'ra', 'f', 'pc', 'ec', 'fc', 'sp', 'dv', 'ret', 'b'];
+
+  function buildShareParams() {
+    var params = new URLSearchParams();
+    params.set('r', riskInput.value);
+    params.set('a', currentAgeInput.value);
+    params.set('ra', retireAgeInput.value);
+    params.set('f', funMoneyInput.value);
+    params.set('pc', portfolioComplexityInput.value);
+    params.set('ec', equityComplexityInput.value);
+    params.set('fc', fiComplexityInput.value);
+    params.set('sp', customizeToggle.checked ? '1' : '0');
+    params.set('dv', expandedViewToggle.checked ? '1' : '0');
+    params.set('ret', retiredToggle.checked ? '1' : '0');
+    params.set('b', String(parseBalance(balanceInput.value)));
+    return params;
+  }
+
+  function syncURL() {
+    if (!window.history || !window.history.replaceState) return;
+    var params = buildShareParams();
+    var newUrl = window.location.pathname + '?' + params.toString() + window.location.hash;
+    window.history.replaceState(null, '', newUrl);
+  }
+
+  function buildShareURL() {
+    var params = buildShareParams();
+    return window.location.origin + window.location.pathname + '?' + params.toString();
+  }
+
+  function clampInt(v, min, max, fallback) {
+    var n = parseInt(v, 10);
+    if (isNaN(n)) return fallback;
+    return Math.max(min, Math.min(max, n));
+  }
+
+  function readStateFromURL() {
+    var params = new URLSearchParams(window.location.search);
+    if (!params.has('r') && !params.has('a')) return false;
+
+    riskInput.value = clampInt(params.get('r'), 1, 5, +riskInput.value);
+    currentAgeInput.value = clampInt(params.get('a'), +currentAgeInput.min, +currentAgeInput.max, +currentAgeInput.value);
+    retireAgeInput.value = clampInt(params.get('ra'), +retireAgeInput.min, +retireAgeInput.max, +retireAgeInput.value);
+    currentAgeValueEl.value = currentAgeInput.value;
+    retireAgeValueEl.value = retireAgeInput.value;
+    funMoneyInput.value = clampInt(params.get('f'), 0, 10, +funMoneyInput.value);
+    portfolioComplexityInput.value = clampInt(params.get('pc'), 1, 3, +portfolioComplexityInput.value);
+    equityComplexityInput.value = clampInt(params.get('ec'), 1, 3, +equityComplexityInput.value);
+    fiComplexityInput.value = clampInt(params.get('fc'), 1, 3, +fiComplexityInput.value);
+    customizeToggle.checked = params.get('sp') === '1';
+    expandedViewToggle.checked = params.get('dv') === '1';
+    retiredToggle.checked = params.get('ret') === '1';
+    var bal = clampInt(params.get('b'), 0, 999999999, parseBalance(balanceInput.value));
+    balanceInput.value = bal.toLocaleString('en-US');
+
+    portfolioComplexityBlock.hidden = customizeToggle.checked;
+    advancedComplexity.hidden = !customizeToggle.checked;
+    ageRowEl.style.display = retiredToggle.checked ? 'none' : '';
+    return true;
+  }
+
   function render() {
     var risk = +riskInput.value;
     var age = +currentAgeInput.value;
@@ -950,6 +1157,8 @@
     } else {
       funMoneySection.style.display = 'none';
     }
+    lastRender = { equityModel: equityModel, fiModel: fiModel, base: base, balance: balance };
+    syncURL();
   }
   [riskInput, funMoneyInput, equityComplexityInput, fiComplexityInput, balanceInput].forEach(function (el) {
     el.addEventListener('input', render);
@@ -986,6 +1195,16 @@
     var n = parseBalance(balanceInput.value);
     balanceInput.value = n ? n.toLocaleString('en-US') : '';
   });
+
+  downloadCsvBtn.addEventListener('click', downloadCSV);
+  copySummaryBtn.addEventListener('click', function () {
+    copyText(buildSummaryText(), copySummaryBtn, 'Summary Copied!');
+  });
+  copyLinkBtn.addEventListener('click', function () {
+    copyText(buildShareURL(), copyLinkBtn, 'Link Copied!');
+  });
+
+  readStateFromURL();
   render();
 })();
 </script>
