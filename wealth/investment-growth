@@ -7,6 +7,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!-- Load Chart.js Library -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
   :root {
     --ink-900: #FFFFFF;
@@ -17,12 +19,13 @@
     --text-lo: #5C6C7B;
     --text-muted: #5C6C7B;
     --accent: #2F6FA8;
-    --gold: #3F6EA6;
-    --rust: #6C93BE;
-    --steel: #C17B3A;
+    --initial-color: #9CA3AF; /* Medium Gray for Starting Balance */
+    --gold: #3F6EA6;         /* Blue for Contributions */
+    --steel: #C17B3A;        /* Orange for Growth */
     --font-display: 'Open Sans', sans-serif;
     --font-body: 'Open Sans', sans-serif;
     --font-mono: 'Open Sans', sans-serif;
+    --slider-color: #5C6C7B; 
   }
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; }
@@ -49,9 +52,9 @@
   .control-block { margin-bottom: 26px; }
   .control-label-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; }
   .control-label-row label { font-size: 13px; font-weight: 600; letter-spacing: 0.02em; color: var(--text-hi); }
-  .control-value { font-family: var(--font-mono); font-size: 13px; color: var(--accent); font-weight: 600; }
+  .control-value { font-family: var(--font-mono); font-size: 13px; color: var(--slider-color); font-weight: 600; }
   .control-value-input {
-    font-family: var(--font-mono); font-size: 13px; color: var(--accent); font-weight: 600;
+    font-family: var(--font-mono); font-size: 13px; color: var(--slider-color); font-weight: 600;
     background: transparent; border: none; border-bottom: 1px dashed var(--text-muted);
     width: 56px; text-align: right; padding: 0 0 1px; -moz-appearance: textfield;
   }
@@ -59,11 +62,11 @@
   .control-value-input:focus-visible { outline: none; border-bottom-color: var(--accent); }
 
   input[type="range"].slider { -webkit-appearance: none; appearance: none; width: 100%; height: 6px; border-radius: 999px; background: var(--ink-700); outline: none; cursor: pointer; margin: 0; }
-  input[type="range"].slider:focus-visible { outline: 2px solid var(--accent); outline-offset: 5px; }
+  input[type="range"].slider:focus-visible { outline: 2px solid var(--slider-color); outline-offset: 5px; }
   input[type="range"].slider::-webkit-slider-runnable-track { height: 6px; border-radius: 999px; background: transparent; }
-  input[type="range"].slider::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; margin-top: -6px; border-radius: 50%; background: #FFFFFF; border: 3px solid var(--accent); box-shadow: 0 2px 4px rgba(0,0,0,0.15); cursor: pointer; }
+  input[type="range"].slider::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; margin-top: -6px; border-radius: 50%; background: #FFFFFF; border: 3px solid var(--slider-color); box-shadow: 0 2px 4px rgba(0,0,0,0.15); cursor: pointer; }
   input[type="range"].slider::-moz-range-track { height: 6px; border-radius: 999px; background: transparent; }
-  input[type="range"].slider::-moz-range-thumb { width: 14px; height: 14px; border-radius: 50%; background: #FFFFFF; border: 3px solid var(--accent); box-shadow: 0 2px 4px rgba(0,0,0,0.15); cursor: pointer; }
+  input[type="range"].slider::-moz-range-thumb { width: 14px; height: 14px; border-radius: 50%; background: #FFFFFF; border: 3px solid var(--slider-color); box-shadow: 0 2px 4px rgba(0,0,0,0.15); cursor: pointer; }
 
   .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; margin-bottom: 8px; }
   @media (max-width: 480px) { .row2 { grid-template-columns: 1fr; gap: 22px; } }
@@ -88,6 +91,8 @@
   .legend__item { display: flex; align-items: center; gap: 7px; }
   .legend__item b { color: var(--text-hi); font-weight: 600; margin-left: 1px; }
   .swatch { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
+
+  .chart-container { margin-top: 30px; position: relative; height: 250px; width: 100%; }
 
   table.table { width: 100%; border-collapse: collapse; margin-top: 22px; }
   .table th { text-align: right; font-size: 11px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-lo); padding: 8px 10px; border-bottom: 2px solid var(--line); }
@@ -118,7 +123,7 @@
 
     <div class="row2">
       <div class="control-block">
-        <div class="control-label-row"><label for="initial">Initial Investment</label></div>
+        <div class="control-label-row"><label for="initial">Starting Balance</label></div>
         <div class="money-wrap"><span class="money-prefix">$</span>
           <input type="text" inputmode="numeric" id="initial" class="money-input" value="10,000">
         </div>
@@ -154,6 +159,12 @@
       </div>
       <div class="bar" id="bar"></div>
       <div class="legend" id="legend"></div>
+      
+      <!-- Chart.js Canvas -->
+      <div class="chart-container">
+          <canvas id="growthChart"></canvas>
+      </div>
+
       <table class="table">
         <thead><tr><th>Year</th><th>Contributions</th><th>Growth</th><th>Balance</th></tr></thead>
         <tbody id="tableBody"></tbody>
@@ -182,29 +193,31 @@
   var copySummaryBtn = document.getElementById('copySummaryBtn');
 
   var lastResult = null;
+  var growthChartInstance = null; // To hold the Chart.js instance
 
   function parseMoney(raw) {
     var digits = String(raw).replace(/[^0-9]/g, '');
     return digits ? parseInt(digits, 10) : 0;
   }
   function fmtMoney(n) { return '$' + Math.round(n).toLocaleString('en-US'); }
+
   function setFill(input) {
     var min = +input.min, max = +input.max, val = +input.value;
     var pct = ((val - min) / (max - min)) * 100;
-    input.style.background = 'linear-gradient(to right, var(--accent) 0%, var(--accent) ' + pct + '%, var(--ink-700) ' + pct + '%, var(--ink-700) 100%)';
+    input.style.background = 'linear-gradient(to right, var(--slider-color) 0%, var(--slider-color) ' + pct + '%, var(--ink-700) ' + pct + '%, var(--ink-700) 100%)';
   }
 
-  // Monthly-compounding future value of a lump sum plus an ordinary annuity of contributions.
   function projectGrowth(initial, monthly, annualRatePct, years) {
     var r = (annualRatePct / 100) / 12;
     var rows = [];
     var balance = initial;
-    var contributed = initial;
+    var totalMonthly = 0;
     for (var y = 1; y <= years; y++) {
       for (var m = 0; m < 12; m++) {
         balance = balance * (1 + r) + monthly;
-        contributed += monthly;
+        totalMonthly += monthly;
       }
+      var contributed = initial + totalMonthly;
       rows.push({ year: y, contributed: contributed, balance: balance, growth: balance - contributed });
     }
     return rows;
@@ -222,23 +235,30 @@
     setFill(yearsInput);
 
     var rows = projectGrowth(initial, monthly, rate, years);
+    if (!rows.length) return;
     var last = rows[rows.length - 1];
     var totalContributed = last.contributed;
     var totalGrowth = last.growth;
     var fv = last.balance;
+    var totalMonthlyContributions = totalContributed - initial;
 
     fvOutEl.textContent = fmtMoney(fv);
 
-    var contribPct = fv > 0 ? (totalContributed / fv) * 100 : 0;
-    var growthPct = 100 - contribPct;
+    var initialPct = fv > 0 ? (initial / fv) * 100 : 0;
+    var monthlyPct = fv > 0 ? (totalMonthlyContributions / fv) * 100 : 0;
+    var growthPct = fv > 0 ? (totalGrowth / fv) * 100 : 0;
 
+    // The top summary bar now includes the initial amount
     barEl.innerHTML =
-      '<div class="bar__seg" style="width:' + contribPct.toFixed(2) + '%;background:var(--gold)"></div>' +
+      '<div class="bar__seg" style="width:' + initialPct.toFixed(2) + '%;background:var(--initial-color)"></div>' +
+      '<div class="bar__seg" style="width:' + monthlyPct.toFixed(2) + '%;background:var(--gold)"></div>' +
       '<div class="bar__seg" style="width:' + growthPct.toFixed(2) + '%;background:var(--steel)"></div>';
     legendEl.innerHTML =
-      '<div class="legend__item"><span class="swatch" style="background:var(--gold)"></span>Contributions <b>' + fmtMoney(totalContributed) + '</b></div>' +
+      '<div class="legend__item"><span class="swatch" style="background:var(--initial-color)"></span>Starting Balance <b>' + fmtMoney(initial) + '</b></div>' +
+      '<div class="legend__item"><span class="swatch" style="background:var(--gold)"></span>Contributions <b>' + fmtMoney(totalMonthlyContributions) + '</b></div>' +
       '<div class="legend__item"><span class="swatch" style="background:var(--steel)"></span>Growth <b>' + fmtMoney(totalGrowth) + '</b></div>';
 
+    // Render Table
     tableBodyEl.innerHTML = '';
     var step = years > 20 ? 5 : (years > 10 ? 2 : 1);
     rows.forEach(function (r) {
@@ -246,6 +266,80 @@
       var tr = document.createElement('tr');
       tr.innerHTML = '<td>' + r.year + '</td><td>' + fmtMoney(r.contributed) + '</td><td>' + fmtMoney(r.growth) + '</td><td>' + fmtMoney(r.balance) + '</td>';
       tableBodyEl.appendChild(tr);
+    });
+    
+    // --- Chart.js Rendering ---
+    var labels = [];
+    var startingData = [];
+    var contributionsData = [];
+    var growthData = [];
+
+    rows.forEach(function(r) {
+        labels.push(r.year);
+        startingData.push(initial);
+        contributionsData.push(r.contributed - initial);
+        growthData.push(r.growth);
+    });
+
+    // Get CSS variable values for chart colors
+    var computedStyles = getComputedStyle(document.documentElement);
+    var initialColor = computedStyles.getPropertyValue('--initial-color').trim();
+    var goldColor = computedStyles.getPropertyValue('--gold').trim();
+    var steelColor = computedStyles.getPropertyValue('--steel').trim();
+    var textColor = computedStyles.getPropertyValue('--text-lo').trim();
+
+    var ctx = document.getElementById('growthChart').getContext('2d');
+    if (growthChartInstance) {
+        growthChartInstance.destroy();
+    }
+    growthChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [
+                { label: 'Starting Balance', data: startingData, backgroundColor: initialColor },
+                { label: 'Contributions', data: contributionsData, backgroundColor: goldColor },
+                { label: 'Growth', data: growthData, backgroundColor: steelColor }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index' },
+            scales: {
+                x: { 
+                    stacked: true, 
+                    grid: { display: false },
+                    title: { display: true, text: 'Year', color: textColor, font: { weight: '600' } }
+                },
+                y: { 
+                    stacked: true, 
+                    ticks: {
+                        color: textColor,
+                        callback: function(value) {
+                            if (value >= 1000000) return '$' + (value / 1000000).toFixed(1).replace('.0', '') + 'M';
+                            if (value >= 1000) return '$' + Math.round(value / 1000) + 'K';
+                            return '$' + value.toLocaleString();
+                        }
+                    }
+                }
+            },
+            plugins: {
+                legend: { display: false }, // Hide legend since we have our custom one
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) { label += ': '; }
+                            if (context.parsed.y !== null) {
+                                label += fmtMoney(context.parsed.y);
+                            }
+                            return label;
+                        }
+                    }
+                }
+            }
+        }
     });
 
     lastResult = { initial: initial, monthly: monthly, rate: rate, years: years, fv: fv, totalContributed: totalContributed, totalGrowth: totalGrowth };
@@ -270,7 +364,7 @@
     if (!lastResult) return;
     var s = lastResult;
     var text = 'Investment Growth Calculator \u2014 Wagner Wealth and Health\n' +
-      'Initial Investment: ' + fmtMoney(s.initial) + '\n' +
+      'Starting Balance: ' + fmtMoney(s.initial) + '\n' +
       'Monthly Contribution: ' + fmtMoney(s.monthly) + '\n' +
       'Expected Annual Return: ' + s.rate.toFixed(1) + '%\n' +
       'Years: ' + s.years + '\n\n' +
@@ -289,7 +383,7 @@
   initialInput.addEventListener('blur', function () { initialInput.value = parseMoney(initialInput.value).toLocaleString('en-US'); });
   monthlyInput.addEventListener('blur', function () { monthlyInput.value = parseMoney(monthlyInput.value).toLocaleString('en-US'); });
 
-  render();
+  render(); // Initial render on page load
 })();
 </script>
 </body>
