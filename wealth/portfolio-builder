@@ -117,29 +117,19 @@
     color: var(--accent);
     font-weight: 600;
   }
-  .control-value-input {
-    font-family: var(--font-mono);
-    font-variant-numeric: tabular-nums;
-    font-size: 13px;
-    color: var(--accent);
-    font-weight: 600;
-    background: transparent;
-    border: none;
-    border-bottom: 1px dashed var(--text-muted);
-    width: 40px;
-    text-align: right;
-    padding: 0 0 1px;
-    -moz-appearance: textfield;
+  
+  .money-wrap { position: relative; }
+  .money-input {
+    width: 100%; background: #FFFFFF; border: 1px solid var(--line); border-radius: 10px; color: var(--text-hi);
+    font-family: var(--font-mono); font-size: 18px; font-weight: 500; padding: 12px 16px 12px 30px; outline: none;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
   }
-  .control-value-input::-webkit-inner-spin-button,
-  .control-value-input::-webkit-outer-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
+  .money-input:focus-visible { border-color: var(--accent); outline: 2px solid var(--accent); outline-offset: 2px; }
+  .money-prefix {
+    position: absolute; left: 16px; top: 50%; transform: translateY(-50%); font-family: var(--font-mono);
+    font-size: 18px; color: var(--text-muted); pointer-events: none;
   }
-  .control-value-input:focus-visible {
-    outline: none;
-    border-bottom-color: var(--accent);
-  }
+  
   input[type="range"].slider {
     -webkit-appearance: none;
     appearance: none;
@@ -453,23 +443,30 @@
       <input type="checkbox" id="retiredToggle">
       Currently Retired
     </label>
+    
     <div class="age-row" id="ageRow">
       <div class="control-block">
-        <div class="control-label-row">
+        <div class="control-label-row" style="align-items: center;">
           <label for="currentAge">Current Age</label>
-          <input type="number" class="control-value-input" id="currentAgeValue" value="30" min="18" max="80">
+          <div class="money-wrap" style="width: 80px;">
+            <input type="number" class="money-input" id="currentAgeValue" style="padding: 8px 12px; font-size: 15px; text-align: right;" value="30" min="18" max="80">
+          </div>
         </div>
         <input type="range" id="currentAge" class="slider" min="18" max="80" step="1" value="30">
       </div>
+      
       <div class="control-block">
-        <div class="control-label-row">
+        <div class="control-label-row" style="align-items: center;">
           <label for="retireAge">Retirement Age</label>
-          <input type="number" class="control-value-input" id="retireAgeValue" value="65" min="45" max="85">
+          <div class="money-wrap" style="width: 80px;">
+            <input type="number" class="money-input" id="retireAgeValue" style="padding: 8px 12px; font-size: 15px; text-align: right;" value="65" min="45" max="85">
+          </div>
         </div>
         <input type="range" id="retireAge" class="slider" min="45" max="85" step="1" value="65">
       </div>
     </div>
-    <div class="control-block">
+    
+    <div class="control-block" style="margin-top: 26px;">
       <div class="control-label-row">
         <label for="risk">Risk Tolerance</label>
         <span class="control-value" id="riskValue">Moderate</span>
@@ -834,21 +831,32 @@
     return digits ? parseInt(digits, 10) : 0;
   }
   function fmtMoney(n) { return '$' + Math.round(n).toLocaleString('en-US'); }
-  function wireAgeInput(rangeInput, numberInput) {
-    rangeInput.addEventListener('input', function () {
-      numberInput.value = rangeInput.value;
+  
+  function wireAgeInput(rangeInput, numberInput, min, max) {
+    rangeInput.addEventListener('input', function (e) {
+      numberInput.value = e.target.value;
       render();
     });
-    numberInput.addEventListener('change', function () {
-      var min = +rangeInput.min, max = +rangeInput.max;
-      var v = parseInt(numberInput.value, 10);
-      if (isNaN(v)) v = +rangeInput.value;
-      v = Math.max(min, Math.min(max, v));
-      numberInput.value = v;
-      rangeInput.value = v;
+    numberInput.addEventListener('input', function (e) {
+      var val = parseInt(e.target.value, 10);
+      if (val > max) { val = max; numberInput.value = max; }
+      if (val < min && e.target.value !== "") {
+        // allow temporary typing state
+      } else if (!isNaN(val)) {
+        rangeInput.value = val;
+      }
+      render();
+    });
+    numberInput.addEventListener('blur', function (e) {
+      var val = parseInt(e.target.value, 10);
+      if (isNaN(val) || val < min) val = min;
+      if (val > max) val = max;
+      numberInput.value = val;
+      rangeInput.value = val;
       render();
     });
   }
+
   function renderOverview(categories, balance) {
     var structureKey = categories.map(function (dc) { return dc.key; }).join(',');
     var changed = lastOverviewKey !== structureKey;
@@ -1089,8 +1097,8 @@
 
   function render() {
     var risk = +riskInput.value;
-    var age = +currentAgeInput.value;
-    var retireAge = +retireAgeInput.value;
+    var age = parseInt(currentAgeValueEl.value, 10) || 18;
+    var retireAge = parseInt(retireAgeValueEl.value, 10) || 45;
     var funMoneyPct = +funMoneyInput.value;
     var equityComplexityLevel = +equityComplexityInput.value;
     var fiComplexityLevel = +fiComplexityInput.value;
@@ -1103,15 +1111,16 @@
     var base = computeBase(risk, age, retireAge, funMoneyPct, isRetired);
     var equityModel = getEquityModel(equityComplexity, base.equity, isRetired);
     var fiModel = getFixedIncomeModel(fiComplexity, base.bonds, base.composite);
+    
     var riskLabel = RISK_LABELS[risk - 1];
     riskValueEl.textContent = riskLabel;
     riskInput.setAttribute('aria-valuetext', riskLabel);
     updateTicks(riskTicks, risk);
     setFill(riskInput);
-    currentAgeValueEl.value = age;
-    retireAgeValueEl.value = retireAge;
+    
     setFill(currentAgeInput);
     setFill(retireAgeInput);
+    
     funMoneyValueEl.textContent = funMoneyPct + '%';
     setFill(funMoneyInput);
     var portfolioComplexityLevel = +portfolioComplexityInput.value;
@@ -1130,7 +1139,9 @@
     fiComplexityInput.setAttribute('aria-valuetext', fiComplexityLabel);
     updateTicks(fiComplexityTicks, fiComplexityLevel);
     setFill(fiComplexityInput);
+    
     readoutEl.innerHTML = 'Aggressiveness Score: <span class="readout__figure">' + Math.round(base.composite * 100) + '%</span>';
+    
     var overviewCategories;
     if (expandedViewToggle.checked) {
       overviewCategories = equityModel.displayCategories.concat(fiModel.displayCategories);
@@ -1146,11 +1157,15 @@
         overviewCategories.push({ key: 'fun', label: 'Satellite Allocation', color: 'plum', pct: base.funMoney });
       }
     }
+    
     renderOverview(overviewCategories, balance);
+    
     var eqTotal = renderTable(equityModel, tableEquityEl, balance);
     var fiTotal = renderTable(fiModel, tableFiEl, balance);
+    
     equityTotalEl.textContent = fmt(eqTotal, 1) + ' \u00B7 ' + fmtMoney(balance * eqTotal / 100);
     fiTotalEl.textContent = fmt(fiTotal, 1) + ' \u00B7 ' + fmtMoney(balance * fiTotal / 100);
+    
     if (base.funMoney > 0) {
       funMoneySection.style.display = '';
       funMoneyDisplayEl.textContent = fmt(base.funMoney, 1) + ' \u00B7 ' + fmtMoney(balance * base.funMoney / 100);
@@ -1160,12 +1175,16 @@
     lastRender = { equityModel: equityModel, fiModel: fiModel, base: base, balance: balance };
     syncURL();
   }
+  
   [riskInput, funMoneyInput, equityComplexityInput, fiComplexityInput, balanceInput].forEach(function (el) {
     el.addEventListener('input', render);
   });
+  
   expandedViewToggle.addEventListener('change', render);
-  wireAgeInput(currentAgeInput, currentAgeValueEl);
-  wireAgeInput(retireAgeInput, retireAgeValueEl);
+  
+  wireAgeInput(currentAgeInput, currentAgeValueEl, 18, 80);
+  wireAgeInput(retireAgeInput, retireAgeValueEl, 45, 85);
+  
   portfolioComplexityInput.addEventListener('input', function () {
     if (!customizeToggle.checked) {
       equityComplexityInput.value = portfolioComplexityInput.value;
@@ -1173,6 +1192,7 @@
     }
     render();
   });
+  
   customizeToggle.addEventListener('change', function () {
     if (customizeToggle.checked) {
       equityComplexityInput.value = portfolioComplexityInput.value;
@@ -1187,10 +1207,12 @@
     }
     render();
   });
+  
   retiredToggle.addEventListener('change', function () {
     ageRowEl.style.display = retiredToggle.checked ? 'none' : '';
     render();
   });
+  
   balanceInput.addEventListener('blur', function () {
     var n = parseBalance(balanceInput.value);
     balanceInput.value = n ? n.toLocaleString('en-US') : '';
