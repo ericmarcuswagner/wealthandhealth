@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Investment Growth | Wagner Wealth and Health</title>
+<title>Investment Growth Calculator | Wagner Wealth and Health</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -18,14 +18,15 @@
     --text-hi: #000000;
     --text-lo: #5C6C7B;
     --text-muted: #5C6C7B;
-    --accent: #2F6FA8;
-    --initial-color: #9CA3AF; /* Medium Gray for Starting Balance */
-    --gold: #3F6EA6;         /* Blue for Contributions */
-    --steel: #C17B3A;        /* Orange for Growth */
+    --accent: #0B253E; /* Deep Blue for focus states */
+    --initial-color: #9CA3AF; /* Medium Gray */
+    --gold: #3F6EA6;
+    --rust: #6C93BE;
+    --steel: #C17B3A;
     --font-display: 'Open Sans', sans-serif;
     --font-body: 'Open Sans', sans-serif;
     --font-mono: 'Open Sans', sans-serif;
-    --slider-color: #5C6C7B; 
+    --slider-color: #0B253E; /* Deep Blue for sliders and values */
   }
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; }
@@ -46,13 +47,22 @@
   .dek { font-size: 14.5px; line-height: 1.55; color: var(--text-lo); margin: 0; max-width: 50ch; }
   .brand-header { display: inline-block; flex-shrink: 0; line-height: 0; text-decoration: none; transition: opacity 150ms ease; }
   .brand-header:hover, .brand-header:focus-visible { opacity: 0.75; }
-  .brand-header:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+  .brand-header:focus-visible { outline: 2px solid var(--slider-color); outline-offset: 4px; }
   .brand-logo { height: 90px; width: auto; display: block; }
 
   .control-block { margin-bottom: 26px; }
   .control-label-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; }
   .control-label-row label { font-size: 13px; font-weight: 600; letter-spacing: 0.02em; color: var(--text-hi); }
+  .control-value { font-family: var(--font-mono); font-size: 13px; color: var(--slider-color); font-weight: 600; }
+  .control-value-input {
+    font-family: var(--font-mono); font-size: 13px; color: var(--slider-color); font-weight: 600;
+    background: transparent; border: none; border-bottom: 1px dashed var(--text-muted);
+    width: 56px; text-align: right; padding: 0 0 1px; -moz-appearance: textfield;
+  }
+  .control-value-input::-webkit-inner-spin-button, .control-value-input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+  .control-value-input:focus-visible { outline: none; border-bottom-color: var(--slider-color); }
 
+  /* Track layout added for perfect thumb alignment */
   input[type="range"].slider { -webkit-appearance: none; appearance: none; width: 100%; height: 6px; border-radius: 999px; background: var(--ink-700); outline: none; cursor: pointer; margin: 10px 0 0 0; }
   input[type="range"].slider:focus-visible { outline: 2px solid var(--slider-color); outline-offset: 5px; }
   input[type="range"].slider::-webkit-slider-runnable-track { height: 6px; border-radius: 999px; background: transparent; }
@@ -70,7 +80,7 @@
     font-family: var(--font-mono); font-size: 18px; font-weight: 500; padding: 12px 16px 12px 30px; outline: none;
     box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
   }
-  .money-input:focus-visible { border-color: var(--accent); outline: 2px solid var(--accent); outline-offset: 2px; }
+  .money-input:focus-visible { border-color: var(--slider-color); outline: 2px solid var(--slider-color); outline-offset: 2px; }
 
   .results { margin-top: 34px; padding-top: 24px; border-top: 2px solid var(--line); }
   .headline { text-align: left; margin-bottom: 22px; }
@@ -94,8 +104,8 @@
 
   .toolbar { display: flex; flex-wrap: wrap; gap: 10px; margin: 28px 0 0; }
   .btn { font-family: var(--font-body); font-size: 12.5px; font-weight: 600; color: var(--text-lo); background: #FFFFFF; border: 1px solid var(--line); border-radius: 8px; padding: 9px 14px; cursor: pointer; transition: border-color 150ms ease, color 150ms ease; }
-  .btn:hover { border-color: var(--accent); color: var(--accent); }
-  .btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .btn:hover { border-color: var(--slider-color); color: var(--slider-color); }
+  .btn:focus-visible { outline: 2px solid var(--slider-color); outline-offset: 2px; }
 
   .foot { font-size: 11.5px; color: var(--text-muted); margin: 28px 0 0; padding-top: 20px; border-top: 1px solid var(--line); }
 </style>
@@ -105,7 +115,7 @@
   <div class="card__body">
     <div class="header-row">
       <div class="header-text">
-        <h1>Investment Growth</h1>
+        <h1>Investment Growth Calculator</h1>
         <p class="dek">See how a lump sum plus regular contributions could grow over time.</p>
       </div>
       <a class="brand-header" href="https://wagnerwh.com" target="_blank" rel="noopener noreferrer" aria-label="Wagner Wealth and Health home">
@@ -358,7 +368,7 @@
   copySummaryBtn.addEventListener('click', function () {
     if (!lastResult) return;
     var s = lastResult;
-    var text = 'Investment Growth \u2014 Wagner Wealth and Health\n' +
+    var text = 'Investment Growth Calculator \u2014 Wagner Wealth and Health\n' +
       'Starting Balance: ' + fmtMoney(s.initial) + '\n' +
       'Monthly Contribution: ' + fmtMoney(s.monthly) + '\n' +
       'Annual Return: ' + s.rate.toFixed(1) + '%\n' +
