@@ -17,7 +17,7 @@
     --text-lo: #5C6C7B;
     --text-muted: #5C6C7B;
     /* General UI accent (sliders, focus rings, numbers) */
-    --accent: #5C6C7B;
+    --accent: #0B253E; /* Updated to deep blue */
     /* Stocks family (blue variants): Market, Small-Cap Value, Momentum */
     --gold: #3F6EA6;
     --rust: #6C93BE;
@@ -31,6 +31,7 @@
     --font-display: 'Open Sans', sans-serif;
     --font-body: 'Open Sans', sans-serif;
     --font-mono: 'Open Sans', sans-serif;
+    --slider-color: #0B253E;
   }
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; }
@@ -88,8 +89,8 @@
     transition: opacity 150ms ease;
   }
   .brand-header:hover, .brand-header:focus-visible { opacity: 0.75; }
-  .brand-header:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
-  .brand-logo { height: 60px; width: auto; display: block; }
+  .brand-header:focus-visible { outline: 2px solid var(--slider-color); outline-offset: 4px; }
+  .brand-logo { height: 90px; width: auto; display: block; } /* Updated from 60px to 90px */
   .dek {
     font-size: 14.5px;
     line-height: 1.55;
@@ -114,7 +115,7 @@
     font-family: var(--font-mono);
     font-variant-numeric: tabular-nums;
     font-size: 13px;
-    color: var(--accent);
+    color: var(--slider-color);
     font-weight: 600;
   }
   
@@ -124,57 +125,20 @@
     font-family: var(--font-mono); font-size: 18px; font-weight: 500; padding: 12px 16px 12px 30px; outline: none;
     box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
   }
-  .money-input:focus-visible { border-color: var(--accent); outline: 2px solid var(--accent); outline-offset: 2px; }
+  .money-input:focus-visible { border-color: var(--slider-color); outline: 2px solid var(--slider-color); outline-offset: 2px; }
   .money-prefix {
     position: absolute; left: 16px; top: 50%; transform: translateY(-50%); font-family: var(--font-mono);
     font-size: 18px; color: var(--text-muted); pointer-events: none;
   }
   
-  input[type="range"].slider {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 100%;
-    height: 6px;
-    border-radius: 999px;
-    background: var(--ink-700);
-    outline: none;
-    cursor: pointer;
-    margin: 0;
-  }
-  input[type="range"].slider:focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 5px;
-  }
-  input[type="range"].slider::-webkit-slider-runnable-track {
-    height: 6px;
-    border-radius: 999px;
-    background: transparent;
-  }
-  input[type="range"].slider::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    width: 18px;
-    height: 18px;
-    margin-top: -6px;
-    border-radius: 50%;
-    background: #FFFFFF;
-    border: 3px solid var(--accent);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
-    cursor: pointer;
-  }
-  input[type="range"].slider::-moz-range-track {
-    height: 6px;
-    border-radius: 999px;
-    background: transparent;
-  }
-  input[type="range"].slider::-moz-range-thumb {
-    width: 14px;
-    height: 14px;
-    border-radius: 50%;
-    background: #FFFFFF;
-    border: 3px solid var(--accent);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
-    cursor: pointer;
-  }
+  /* Fixed slider tracks for alignment */
+  input[type="range"].slider { -webkit-appearance: none; appearance: none; width: 100%; height: 6px; border-radius: 999px; background: var(--ink-700); outline: none; cursor: pointer; margin: 10px 0 0 0; }
+  input[type="range"].slider:focus-visible { outline: 2px solid var(--slider-color); outline-offset: 5px; }
+  input[type="range"].slider::-webkit-slider-runnable-track { height: 6px; border-radius: 999px; background: transparent; }
+  input[type="range"].slider::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; margin-top: -6px; border-radius: 50%; background: #FFFFFF; border: 3px solid var(--slider-color); box-shadow: 0 2px 4px rgba(0,0,0,0.15); cursor: pointer; }
+  input[type="range"].slider::-moz-range-track { height: 6px; border-radius: 999px; background: transparent; }
+  input[type="range"].slider::-moz-range-thumb { width: 14px; height: 14px; border-radius: 50%; background: #FFFFFF; border: 3px solid var(--slider-color); box-shadow: 0 2px 4px rgba(0,0,0,0.15); cursor: pointer; }
+
   .tick-row {
     display: flex;
     justify-content: space-between;
@@ -192,7 +156,7 @@
   .tick-row--3 span { display: block; width: 100%; text-align: center; white-space: normal; }
   .tick-row--3 span:first-child { text-align: left; padding-left: 2px; }
   .tick-row--3 span:last-child { text-align: right; padding-right: 2px; }
-  .tick-row span.is-active { color: var(--accent); font-weight: 600; }
+  .tick-row span.is-active { color: var(--slider-color); font-weight: 600; }
   .age-row, .complexity-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -213,7 +177,7 @@
     user-select: none;
   }
   .checkbox-row input[type="checkbox"] {
-    accent-color: var(--accent);
+    accent-color: var(--slider-color);
     width: 16px;
     height: 16px;
     cursor: pointer;
@@ -229,7 +193,7 @@
     padding: 14px 16px;
     margin: 24px 0;
   }
-  .readout__figure { color: var(--accent); font-weight: 600; }
+  .readout__figure { color: var(--slider-color); font-weight: 600; }
   .readout-caption {
     font-size: 11.5px;
     color: var(--text-muted);
@@ -262,8 +226,8 @@
     box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
   }
   .balance-input:focus-visible {
-    border-color: var(--accent);
-    outline: 2px solid var(--accent);
+    border-color: var(--slider-color);
+    outline: 2px solid var(--slider-color);
     outline-offset: 2px;
   }
   .results-grid { display: block; }
@@ -355,7 +319,7 @@
   }
   .table tr.ticker-row { cursor: pointer; }
   .table tr.ticker-row:hover { background: rgba(0,0,0,0.025); }
-  .table tr.ticker-row:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+  .table tr.ticker-row:focus-visible { outline: 2px solid var(--slider-color); outline-offset: -2px; }
   .table tr.ticker-row td.ticker-code { color: var(--text-hi); font-weight: 500; width: 78px; white-space: nowrap; }
   .chevron {
     display: inline-block;
@@ -412,8 +376,8 @@
     cursor: pointer;
     transition: border-color 150ms ease, color 150ms ease;
   }
-  .btn:hover { border-color: var(--accent); color: var(--accent); }
-  .btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .btn:hover { border-color: var(--slider-color); color: var(--slider-color); }
+  .btn:focus-visible { outline: 2px solid var(--slider-color); outline-offset: 2px; }
   .foot {
     font-size: 11.5px;
     color: var(--text-muted);
