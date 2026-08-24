@@ -10,13 +10,14 @@
 <style>
   :root {
     --ink-900: #FFFFFF; --ink-800: #F8F9FA; --ink-700: #E9ECEF; --line: #DEE2E6;
-    --text-hi: #000000; --text-lo: #5C6C7B; --text-muted: #5C6C7B; --accent: #2F6FA8;
+    --text-hi: #000000; --text-lo: #5C6C7B; --text-muted: #5C6C7B; 
+    --accent: #0B253E; /* Deep Blue for focus states and accents */
     --initial-color: #9CA3AF; /* Medium Gray for Starting Balance */
     --gold: #3F6EA6; /* Blue for Contributions */
     --steel: #C17B3A; /* Orange for Growth */
     --good: #3D7A4A; --warn: #B4694B;
     --font-display: 'Open Sans', sans-serif; --font-body: 'Open Sans', sans-serif; --font-mono: 'Open Sans', sans-serif;
-    --slider-color: #5C6C7B;
+    --slider-color: #0B253E; /* Deep Blue for sliders */
   }
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; }
@@ -49,9 +50,12 @@
   }
   .money-input:focus-visible { border-color: var(--accent); outline: 2px solid var(--accent); outline-offset: 2px; }
 
+  /* Restored CSS for slider track to fix thumb alignment */
   input[type="range"].slider { -webkit-appearance: none; appearance: none; width: 100%; height: 6px; border-radius: 999px; background: var(--ink-700); outline: none; cursor: pointer; margin: 10px 0 0 0; }
   input[type="range"].slider:focus-visible { outline: 2px solid var(--slider-color); outline-offset: 5px; }
+  input[type="range"].slider::-webkit-slider-runnable-track { height: 6px; border-radius: 999px; background: transparent; }
   input[type="range"].slider::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; margin-top: -6px; border-radius: 50%; background: #FFFFFF; border: 3px solid var(--slider-color); box-shadow: 0 2px 4px rgba(0,0,0,0.15); cursor: pointer; }
+  input[type="range"].slider::-moz-range-track { height: 6px; border-radius: 999px; background: transparent; }
   input[type="range"].slider::-moz-range-thumb { width: 14px; height: 14px; border-radius: 50%; background: #FFFFFF; border: 3px solid var(--slider-color); box-shadow: 0 2px 4px rgba(0,0,0,0.15); cursor: pointer; }
 
   .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; margin-bottom: 8px; }
