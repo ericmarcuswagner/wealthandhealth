@@ -12,11 +12,12 @@
 <style>
   :root {
     --ink-900: #FFFFFF; --ink-800: #F8F9FA; --ink-700: #E9ECEF; --line: #DEE2E6;
-    --text-hi: #000000; --text-lo: #5C6C7B; --text-muted: #5C6C7B; --accent: #2F6FA8;
+    --text-hi: #000000; --text-lo: #5C6C7B; --text-muted: #5C6C7B; 
+    --accent: #0B253E;
     --gold: #3F6EA6; /* Blue for Mortgage */
     --steel: #C17B3A; /* Orange for Additional Costs */
     --font-display: 'Open Sans', sans-serif; --font-body: 'Open Sans', sans-serif; --font-mono: 'Open Sans', sans-serif;
-    --slider-color: #5C6C7B;
+    --slider-color: #0B253E; /* Deep Blue for sliders and buttons */
   }
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; }
@@ -33,7 +34,7 @@
   .dek { font-size: 14.5px; line-height: 1.55; color: var(--text-lo); margin: 0; max-width: 50ch; }
   .brand-header { display: inline-block; flex-shrink: 0; line-height: 0; text-decoration: none; transition: opacity 150ms ease; }
   .brand-header:hover, .brand-header:focus-visible { opacity: 0.75; }
-  .brand-header:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+  .brand-header:focus-visible { outline: 2px solid var(--slider-color); outline-offset: 4px; }
   .brand-logo { height: 90px; width: auto; display: block; }
 
   .control-block { margin-bottom: 26px; width: 100%; }
@@ -47,7 +48,7 @@
     font-family: var(--font-mono); font-size: 18px; font-weight: 500; padding: 12px 16px 12px 30px; outline: none;
     box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
   }
-  .money-input:focus-visible { border-color: var(--accent); outline: 2px solid var(--accent); outline-offset: 2px; }
+  .money-input:focus-visible { border-color: var(--slider-color); outline: 2px solid var(--slider-color); outline-offset: 2px; }
 
   input[type="range"].slider { -webkit-appearance: none; appearance: none; width: 100%; height: 6px; border-radius: 999px; background: var(--ink-700); outline: none; cursor: pointer; margin: 10px 0 0 0; }
   input[type="range"].slider:focus-visible { outline: 2px solid var(--slider-color); outline-offset: 5px; }
@@ -58,7 +59,7 @@
   @media (max-width: 480px) { .row2 { grid-template-columns: 1fr; gap: 22px; } }
 
   .checkbox-row { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: var(--text-hi); margin: 0 0 20px; cursor: pointer; user-select: none; }
-  .checkbox-row input[type="checkbox"] { accent-color: var(--accent); width: 16px; height: 16px; cursor: pointer; flex-shrink: 0; }
+  .checkbox-row input[type="checkbox"] { accent-color: var(--slider-color); width: 16px; height: 16px; cursor: pointer; flex-shrink: 0; }
 
   /* Term Toggle Button Styling */
   .toggle-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 4px; }
@@ -67,7 +68,7 @@
     background: #FFFFFF; border: 1px solid var(--line); border-radius: 10px; padding: 12px; cursor: pointer;
     transition: border-color 150ms ease, color 150ms ease, background 150ms ease;
   }
-  .toggle-btn.is-active { border-color: var(--slider-color); color: var(--slider-color); background: rgba(92,108,123,0.08); }
+  .toggle-btn.is-active { border-color: var(--slider-color); color: var(--slider-color); background: rgba(11, 37, 62, 0.08); }
   .toggle-btn:focus-visible { outline: 2px solid var(--slider-color); outline-offset: 2px; }
 
   .results { margin-top: 34px; padding-top: 24px; border-top: 2px solid var(--line); }
@@ -96,8 +97,8 @@
 
   .toolbar { display: flex; flex-wrap: wrap; gap: 10px; margin: 28px 0 0; }
   .btn { font-family: var(--font-body); font-size: 12.5px; font-weight: 600; color: var(--text-lo); background: #FFFFFF; border: 1px solid var(--line); border-radius: 8px; padding: 9px 14px; cursor: pointer; transition: border-color 150ms ease, color 150ms ease; }
-  .btn:hover { border-color: var(--accent); color: var(--accent); }
-  .btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .btn:hover { border-color: var(--slider-color); color: var(--slider-color); }
+  .btn:focus-visible { outline: 2px solid var(--slider-color); outline-offset: 2px; }
 
   .foot { font-size: 11.5px; color: var(--text-muted); margin: 28px 0 0; padding-top: 20px; border-top: 1px solid var(--line); }
 </style>
@@ -363,8 +364,8 @@
     var taxPct = parseFloat(taxInput.value) || 0;
     var maintPct = parseFloat(maintInput.value) || 0;
     
-    taxAmtOut.textContent = '(' + fmtMoney(price * (taxPct / 100)) + '/Year)';
-    maintAmtOut.textContent = '(' + fmtMoney(price * (maintPct / 100)) + '/Year)';
+    taxAmtOut.textContent = '(' + fmtMoney(price * (taxPct / 100)) + ' /Year)';
+    maintAmtOut.textContent = '(' + fmtMoney(price * (maintPct / 100)) + ' /Year)';
 
     if (isManualCosts) {
         var insuranceAmt = parseMoney(insuranceInput.value);
