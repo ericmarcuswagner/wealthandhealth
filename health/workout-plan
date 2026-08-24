@@ -13,6 +13,7 @@
     --text-hi: #000000; --text-lo: #5C6C7B; --text-muted: #5C6C7B; --accent: #2F6FA8;
     --gold: #3F6EA6; --steel: #C17B3A; --olive: #274763; --plum: #7C5A9E;
     --font-display: 'Open Sans', sans-serif; --font-body: 'Open Sans', sans-serif; --font-mono: 'Open Sans', sans-serif;
+    --slider-color: #0B253E; /* Deep Blue for sliders and buttons */
   }
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; }
@@ -28,20 +29,20 @@
   .dek { font-size: 14.5px; line-height: 1.55; color: var(--text-lo); margin: 0; max-width: 50ch; }
   .brand-header { display: inline-block; flex-shrink: 0; line-height: 0; text-decoration: none; transition: opacity 150ms ease; }
   .brand-header:hover, .brand-header:focus-visible { opacity: 0.75; }
-  .brand-header:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+  .brand-header:focus-visible { outline: 2px solid var(--slider-color); outline-offset: 4px; }
   .brand-logo { height: 90px; width: auto; display: block; }
 
   .control-block { margin-bottom: 26px; }
   .control-label-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; }
   .control-label-row label { font-size: 13px; font-weight: 600; letter-spacing: 0.02em; color: var(--text-hi); }
-  .control-value { font-family: var(--font-mono); font-size: 13px; color: var(--accent); font-weight: 600; }
+  .control-value { font-family: var(--font-mono); font-size: 13px; color: var(--slider-color); font-weight: 600; }
 
   input[type="range"].slider { -webkit-appearance: none; appearance: none; width: 100%; height: 6px; border-radius: 999px; background: var(--ink-700); outline: none; cursor: pointer; margin: 0; }
-  input[type="range"].slider:focus-visible { outline: 2px solid var(--accent); outline-offset: 5px; }
+  input[type="range"].slider:focus-visible { outline: 2px solid var(--slider-color); outline-offset: 5px; }
   input[type="range"].slider::-webkit-slider-runnable-track { height: 6px; border-radius: 999px; background: transparent; }
-  input[type="range"].slider::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; margin-top: -6px; border-radius: 50%; background: #FFFFFF; border: 3px solid var(--accent); box-shadow: 0 2px 4px rgba(0,0,0,0.15); cursor: pointer; }
+  input[type="range"].slider::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; margin-top: -6px; border-radius: 50%; background: #FFFFFF; border: 3px solid var(--slider-color); box-shadow: 0 2px 4px rgba(0,0,0,0.15); cursor: pointer; }
   input[type="range"].slider::-moz-range-track { height: 6px; border-radius: 999px; background: transparent; }
-  input[type="range"].slider::-moz-range-thumb { width: 14px; height: 14px; border-radius: 50%; background: #FFFFFF; border: 3px solid var(--accent); box-shadow: 0 2px 4px rgba(0,0,0,0.15); cursor: pointer; }
+  input[type="range"].slider::-moz-range-thumb { width: 14px; height: 14px; border-radius: 50%; background: #FFFFFF; border: 3px solid var(--slider-color); box-shadow: 0 2px 4px rgba(0,0,0,0.15); cursor: pointer; }
 
   .toggle-row { display: grid; gap: 10px; }
   .toggle-row--3 { grid-template-columns: 1fr 1fr 1fr; }
@@ -52,8 +53,8 @@
     background: #FFFFFF; border: 1px solid var(--line); border-radius: 10px; padding: 12px; cursor: pointer;
     transition: border-color 150ms ease, color 150ms ease, background 150ms ease;
   }
-  .toggle-btn.is-active { border-color: var(--accent); color: var(--accent); background: rgba(47,111,168,0.06); }
-  .toggle-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .toggle-btn.is-active { border-color: var(--slider-color); color: var(--slider-color); background: rgba(11, 37, 62, 0.08); }
+  .toggle-btn:focus-visible { outline: 2px solid var(--slider-color); outline-offset: 2px; }
 
   .results { margin-top: 34px; padding-top: 24px; border-top: 2px solid var(--line); }
   .plan-summary { font-size: 14px; color: var(--text-lo); margin-bottom: 22px; }
@@ -71,8 +72,8 @@
 
   .toolbar { display: flex; flex-wrap: wrap; gap: 10px; margin: 28px 0 0; }
   .btn { font-family: var(--font-body); font-size: 12.5px; font-weight: 600; color: var(--text-lo); background: #FFFFFF; border: 1px solid var(--line); border-radius: 8px; padding: 9px 14px; cursor: pointer; transition: border-color 150ms ease, color 150ms ease; }
-  .btn:hover { border-color: var(--accent); color: var(--accent); }
-  .btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .btn:hover { border-color: var(--slider-color); color: var(--slider-color); }
+  .btn:focus-visible { outline: 2px solid var(--slider-color); outline-offset: 2px; }
 
   .foot { font-size: 11.5px; color: var(--text-muted); margin: 28px 0 0; padding-top: 20px; border-top: 1px solid var(--line); }
 </style>
@@ -133,7 +134,7 @@
       <button type="button" class="btn" id="copySummaryBtn">Copy Plan</button>
     </div>
 
-    <p class="foot">Wagner Wealth and Health &middot; Education Tool &middot; Not Personalized Medical or Fitness Advice</p>
+    <p class="foot">Wagner Wealth and Health &middot; Educational Tool &middot; Not Personalized Medical Advice</p>
   </div>
 </div>
 <script>
@@ -155,7 +156,7 @@
   function setFill(input) {
     var min = +input.min, max = +input.max, val = +input.value;
     var pct = ((val - min) / (max - min)) * 100;
-    input.style.background = 'linear-gradient(to right, var(--accent) 0%, var(--accent) ' + pct + '%, var(--ink-700) ' + pct + '%, var(--ink-700) 100%)';
+    input.style.background = 'linear-gradient(to right, var(--slider-color) 0%, var(--slider-color) ' + pct + '%, var(--ink-700) ' + pct + '%, var(--ink-700) 100%)';
   }
   function wireToggle(container, setter) {
     container.addEventListener('click', function (e) {
@@ -170,10 +171,11 @@
   wireToggle(experienceToggle, function (v) { experience = v; });
   wireToggle(equipmentToggle, function (v) { equipment = v; });
 
+  // Sets forced to 3 across the board.
   var GOAL_SCHEME = {
-    strength: { sets: '4-5', reps: '3-6', rest: '2-3 min', label: 'Strength' },
-    hypertrophy: { sets: '3-4', reps: '8-12', rest: '60-90 sec', label: 'Hypertrophy' },
-    endurance: { sets: '2-3', reps: '15-20', rest: '30-45 sec', label: 'Endurance' }
+    strength: { sets: '3', reps: '3-6', rest: '2-3 min', label: 'Strength' },
+    hypertrophy: { sets: '3', reps: '8-12', rest: '60-90 sec', label: 'Hypertrophy' },
+    endurance: { sets: '3', reps: '15-20', rest: '30-45 sec', label: 'Endurance' }
   };
 
   // Exercise pools per movement pattern, split by equipment access.
