@@ -19,6 +19,7 @@
     --text-lo: #5C6C7B;
     --text-muted: #5C6C7B;
     --accent: #2F6FA8;
+    --warn: #B4694B;
     --principal-color: #3F6EA6; /* Blue for Principal */
     --interest-color: #C17B3A;  /* Orange for Interest */
     --font-display: 'Open Sans', sans-serif;
@@ -48,7 +49,7 @@
   .brand-header:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
   .brand-logo { height: 90px; width: auto; display: block; }
 
-  .control-block { margin-bottom: 26px; width: 100%; }
+  .control-block { width: 100%; }
   .control-label-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; }
   .control-label-row label { font-size: 13px; font-weight: 600; letter-spacing: 0.02em; color: var(--text-hi); }
   
@@ -60,11 +61,34 @@
     box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
   }
   .money-input:focus-visible { border-color: var(--accent); outline: 2px solid var(--accent); outline-offset: 2px; }
+  
+  select.money-input {
+    padding-left: 16px; font-family: var(--font-body); font-size: 15px; -webkit-appearance: auto; cursor: pointer;
+  }
 
-  /* 3-Column layout for desktop */
-  .row3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-bottom: 24px; }
-  .row3 .control-block { margin-bottom: 0; }
-  @media (max-width: 650px) { .row3 { grid-template-columns: 1fr; gap: 22px; } }
+  /* Multi-Loan Rows */
+  #loansContainer { margin-bottom: 16px; }
+  .loan-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 32px;
+    gap: 16px;
+    align-items: end;
+    margin-bottom: 24px;
+    padding-bottom: 24px;
+    border-bottom: 1px dashed var(--line);
+    position: relative;
+  }
+  .loan-row:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 16px; }
+  .btn-remove {
+    background: transparent; border: none; color: var(--warn); font-size: 26px; cursor: pointer; 
+    padding: 0 0 8px 0; line-height: 1; transition: opacity 150ms ease;
+  }
+  .btn-remove:hover { opacity: 0.6; }
+  
+  @media (max-width: 650px) { 
+    .loan-row { grid-template-columns: 1fr; gap: 16px; } 
+    .btn-remove { position: absolute; top: -5px; right: 0; padding: 0; }
+  }
 
   .extra-payment-wrap { width: 120px; }
   .extra-payment-input { padding: 8px 12px 8px 30px; font-size: 15px; }
@@ -74,38 +98,29 @@
   input[type="range"].slider::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; margin-top: -6px; border-radius: 50%; background: #FFFFFF; border: 3px solid var(--slider-color); box-shadow: 0 2px 4px rgba(0,0,0,0.15); cursor: pointer; }
   input[type="range"].slider::-moz-range-thumb { width: 14px; height: 14px; border-radius: 50%; background: #FFFFFF; border: 3px solid var(--slider-color); box-shadow: 0 2px 4px rgba(0,0,0,0.15); cursor: pointer; }
 
-  .results { margin-top: 34px; padding-top: 24px; border-top: 2px solid var(--line); }
+  .results { margin-top: 24px; padding-top: 24px; border-top: 2px solid var(--line); }
   
-  /* Top Stat Row replacing the massive headlines */
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; margin-bottom: 24px; }
+  @media (max-width: 480px) { .row2 { grid-template-columns: 1fr; gap: 22px; } }
+  
   .stat-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 22px; }
   @media (max-width: 480px) { .stat-row { grid-template-columns: 1fr; } }
   .stat { text-align: left; }
   .stat .label { font-size: 12px; color: var(--text-lo); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; margin-bottom: 6px; }
   .stat .value { font-family: var(--font-mono); font-size: 28px; font-weight: 700; color: var(--text-hi); }
   
-  /* Savings Tooltip Box */
   .savings-box { 
-    background-color: #F1F5F9; 
-    border: 1px solid #E2E8F0; 
-    border-radius: 10px; 
-    padding: 16px 20px; 
-    font-size: 14px; 
-    color: #334155; 
-    line-height: 1.5; 
-    margin-bottom: 28px;
-    text-align: center;
-    position: relative;
+    background-color: #F1F5F9; border: 1px solid #E2E8F0; border-radius: 10px; 
+    padding: 16px 20px; font-size: 14px; color: #334155; line-height: 1.5; 
+    margin-bottom: 28px; text-align: center; position: relative;
   }
-  /* Optional caret pointing up */
-  .savings-box::before {
-    content: ''; position: absolute; top: -7px; left: 50%; transform: translateX(-50%);
-    border-width: 0 7px 7px 7px; border-style: solid; border-color: transparent transparent #E2E8F0 transparent;
-  }
-  .savings-box::after {
-    content: ''; position: absolute; top: -5px; left: 50%; transform: translateX(-50%);
-    border-width: 0 6px 6px 6px; border-style: solid; border-color: transparent transparent #F1F5F9 transparent;
-  }
+  .savings-box::before { content: ''; position: absolute; top: -7px; left: 50%; transform: translateX(-50%); border-width: 0 7px 7px 7px; border-style: solid; border-color: transparent transparent #E2E8F0 transparent; }
+  .savings-box::after { content: ''; position: absolute; top: -5px; left: 50%; transform: translateX(-50%); border-width: 0 6px 6px 6px; border-style: solid; border-color: transparent transparent #F1F5F9 transparent; }
   .savings-box strong { font-weight: 700; color: #0F172A; }
+  
+  .warning-box { background-color: rgba(180, 105, 75, 0.08); border: 1px solid rgba(180, 105, 75, 0.3); color: var(--warn); display: none; }
+  .warning-box::before { border-color: transparent transparent rgba(180, 105, 75, 0.3) transparent; }
+  .warning-box::after { border-color: transparent transparent #FDF7F5 transparent; }
 
   .chart-container { margin-top: 10px; margin-bottom: 30px; position: relative; height: 250px; width: 100%; }
 
@@ -114,6 +129,11 @@
   .table th:first-child { text-align: left; }
   .table td { text-align: right; font-family: var(--font-mono); font-size: 12.5px; color: var(--text-hi); padding: 7px 10px; border-bottom: 1px solid var(--line); }
   .table td:first-child { text-align: left; color: var(--text-lo); }
+
+  .toolbar { display: flex; flex-wrap: wrap; gap: 10px; margin: 28px 0 0; }
+  .btn { font-family: var(--font-body); font-size: 12.5px; font-weight: 600; color: var(--text-lo); background: #FFFFFF; border: 1px solid var(--line); border-radius: 8px; padding: 9px 14px; cursor: pointer; transition: border-color 150ms ease, color 150ms ease; }
+  .btn:hover { border-color: var(--accent); color: var(--accent); }
+  .btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
   .foot { font-size: 11.5px; color: var(--text-muted); margin: 28px 0 0; padding-top: 20px; border-top: 1px solid var(--line); }
 </style>
@@ -124,46 +144,39 @@
     <div class="header-row">
       <div class="header-text">
         <h1>Debt Payoff</h1>
-        <p class="dek">See how long it will take to pay down debt, and how much extra payments could save you.</p>
+        <p class="dek">See how long it will take to pay down your debt, and how much extra payments could save you.</p>
       </div>
       <a class="brand-header" href="https://wagnerwh.com" target="_blank" rel="noopener noreferrer" aria-label="Wagner Wealth and Health home">
         <img class="brand-logo" src="https://assets.wagnerwh.com/logo-complete.png" alt="Wagner Wealth and Health" loading="lazy">
       </a>
     </div>
 
-    <!-- 3 Column Layout for Desktop -->
-    <div class="row3">
+    <!-- Dynamic Loans Container -->
+    <div id="loansContainer"></div>
+    
+    <div style="text-align: left; margin-bottom: 24px;">
+      <button type="button" class="btn" id="addLoanBtn">+ Add Another Loan</button>
+    </div>
+
+    <div class="row2" style="align-items: end; margin-bottom: 12px; padding-top: 24px; border-top: 2px solid var(--line);">
       <div class="control-block">
-        <div class="control-label-row"><label for="balance">Loan Balance</label></div>
-        <div class="money-wrap"><span class="money-prefix">$</span>
-          <input type="text" inputmode="numeric" id="balance" class="money-input" value="10,000">
-        </div>
+        <div class="control-label-row"><label for="strategy">Payoff Strategy</label></div>
+        <select id="strategy" class="money-input">
+          <option value="avalanche">Avalanche (Highest Interest First)</option>
+          <option value="snowball">Snowball (Lowest Balance First)</option>
+        </select>
       </div>
       
       <div class="control-block">
-        <div class="control-label-row"><label for="rate">Interest Rate</label></div>
-        <div class="money-wrap"><span class="money-prefix">%</span>
-          <input type="text" inputmode="numeric" id="rate" class="money-input" value="5.0" style="padding-left: 36px;">
+        <div class="control-label-row" style="align-items: center;">
+          <label for="extraPaymentInput">Extra Monthly Payment</label>
+          <div class="money-wrap extra-payment-wrap">
+            <span class="money-prefix" style="font-size: 15px;">$</span>
+            <input type="number" id="extraPaymentInput" class="money-input extra-payment-input" value="0" min="0">
+          </div>
         </div>
+        <input type="range" id="extraPaymentSlider" class="slider" min="0" max="1000" step="10" value="0">
       </div>
-
-      <div class="control-block">
-        <div class="control-label-row"><label for="payment">Monthly Payment</label></div>
-        <div class="money-wrap"><span class="money-prefix">$</span>
-          <input type="text" inputmode="numeric" id="payment" class="money-input" value="200">
-        </div>
-      </div>
-    </div>
-
-    <div class="control-block" style="margin-top: 12px;">
-      <div class="control-label-row" style="align-items: center;">
-        <label for="extraPaymentInput">Extra Monthly Payment</label>
-        <div class="money-wrap extra-payment-wrap">
-          <span class="money-prefix" style="font-size: 15px;">$</span>
-          <input type="number" id="extraPaymentInput" class="money-input extra-payment-input" value="0" min="0">
-        </div>
-      </div>
-      <input type="range" id="extraPaymentSlider" class="slider" min="0" max="1000" step="10" value="0">
     </div>
 
     <div class="results">
@@ -181,6 +194,10 @@
       <!-- Savings Highlight Tooltip Box -->
       <div id="savingsBox" class="savings-box" style="display: none;">
         Paying an extra <strong id="extraAmtMsg">$0</strong>/mo pays this off <strong id="timeSavedMsg">0 mo</strong> sooner and saves <strong id="interestSavedMsg">$0</strong> in interest.
+      </div>
+      
+      <div id="warningBox" class="savings-box warning-box" style="display: none;">
+        <strong>Warning:</strong> One or more of your loans has a minimum payment that doesn't cover the monthly interest. Increase your payments to avoid infinite debt.
       </div>
 
       <!-- Chart.js Canvas -->
@@ -200,9 +217,10 @@
 </div>
 <script>
 (function () {
-  var balEl = document.getElementById('balance');
-  var rateEl = document.getElementById('rate');
-  var pmtEl = document.getElementById('payment');
+  var loansContainer = document.getElementById('loansContainer');
+  var addLoanBtn = document.getElementById('addLoanBtn');
+  var strategySelect = document.getElementById('strategy');
+  
   var extraPmtInput = document.getElementById('extraPaymentInput');
   var extraPmtSlider = document.getElementById('extraPaymentSlider');
   
@@ -210,6 +228,7 @@
   var interestOut = document.getElementById('interestOut');
   
   var savingsBox = document.getElementById('savingsBox');
+  var warningBox = document.getElementById('warningBox');
   var extraAmtMsg = document.getElementById('extraAmtMsg');
   var timeSavedMsg = document.getElementById('timeSavedMsg');
   var interestSavedMsg = document.getElementById('interestSavedMsg');
@@ -237,67 +256,186 @@
     return str.trim();
   }
 
-  function calculatePayoff(balance, rate, payment) {
-    var r = (rate / 100) / 12;
+  // --- Dynamic Loan Rows ---
+  function createLoanRow(bal, rate, pmt) {
+    var div = document.createElement('div');
+    div.className = 'loan-row';
+    div.innerHTML = `
+      <div class="control-block" style="margin-bottom:0">
+        <div class="control-label-row"><label>Loan Balance</label></div>
+        <div class="money-wrap"><span class="money-prefix">$</span>
+          <input type="text" inputmode="numeric" class="money-input loan-bal" value="${bal}">
+        </div>
+      </div>
+      <div class="control-block" style="margin-bottom:0">
+        <div class="control-label-row"><label>Interest Rate</label></div>
+        <div class="money-wrap"><span class="money-prefix">%</span>
+          <input type="text" inputmode="numeric" class="money-input loan-rate" value="${rate}" style="padding-left: 36px;">
+        </div>
+      </div>
+      <div class="control-block" style="margin-bottom:0">
+        <div class="control-label-row"><label>Monthly Payment</label></div>
+        <div class="money-wrap"><span class="money-prefix">$</span>
+          <input type="text" inputmode="numeric" class="money-input loan-pmt" value="${pmt}">
+        </div>
+      </div>
+      <button type="button" class="btn-remove" title="Remove Loan" aria-label="Remove Loan">&times;</button>
+    `;
+    
+    // Bind Events
+    div.querySelector('.btn-remove').addEventListener('click', function() {
+      if (document.querySelectorAll('.loan-row').length > 1) {
+        div.remove();
+        render();
+      } else {
+        alert("You must have at least one loan.");
+      }
+    });
+    
+    var balEl = div.querySelector('.loan-bal');
+    var pmtEl = div.querySelector('.loan-pmt');
+    
+    balEl.addEventListener('blur', function() { balEl.value = parseMoney(balEl.value).toLocaleString('en-US'); });
+    pmtEl.addEventListener('blur', function() { pmtEl.value = parseMoney(pmtEl.value).toLocaleString('en-US'); });
+    
+    div.querySelectorAll('input').forEach(function(el) {
+      el.addEventListener('input', render);
+    });
+    
+    loansContainer.appendChild(div);
+  }
+
+  // Initialize with 3 conflicting loans so strategy toggle differences are immediately obvious
+  createLoanRow("10,000", "8.0", "250");
+  createLoanRow("4,000", "4.0", "150");
+  createLoanRow("7,000", "6.0", "200");
+
+  addLoanBtn.addEventListener('click', function() {
+    createLoanRow("5,000", "6.0", "150");
+    render();
+  });
+
+  // --- Logic ---
+  function calculateMultiPayoff(loans, extraPayment, strategy) {
+    // Clone to prevent mutating original inputs
+    var activeLoans = loans.map(l => ({ bal: l.bal, rate: l.rate, originalMin: l.pmt }));
     var months = 0;
     var totalInterest = 0;
-    var currentBalance = balance;
-    var annualData = [];
-
-    if (payment <= currentBalance * r && currentBalance > 0) {
-      return { months: Infinity, interest: Infinity, annualData: [] };
-    }
+    var totalInitialBalance = activeLoans.reduce((s, l) => s + l.bal, 0);
     
+    // The total cash flow stays constant as loans are paid off (the debt snowball effect)
+    var totalMonthlyBudget = activeLoans.reduce((s, l) => s + l.originalMin, 0) + extraPayment;
+    
+    var annualData = [];
     var yearPaid = 0;
     var yearInterest = 0;
+    
+    // Pre-flight check for infinite loop (min payments don't cover initial interest)
+    var initialInterest = activeLoans.reduce((s, l) => s + (l.bal * (l.rate/100/12)), 0);
+    if (totalMonthlyBudget <= initialInterest && totalInitialBalance > 0) {
+       return { months: Infinity, interest: Infinity, annualData: [] };
+    }
 
-    while (currentBalance > 0 && months < 1200) {
+    while (activeLoans.length > 0 && months < 1200) {
       months++;
-      var interestForMonth = currentBalance * r;
-      var principalForMonth = payment - interestForMonth;
+      var availableCash = totalMonthlyBudget;
+      var monthInterest = 0;
+      var monthPaid = 0;
 
-      if (principalForMonth > currentBalance) {
-        principalForMonth = currentBalance;
-        payment = principalForMonth + interestForMonth; // Final adjusted payment
+      // 1. Accrue Interest & Take Minimum Payments
+      for (var i = 0; i < activeLoans.length; i++) {
+        var loan = activeLoans[i];
+        var intCharge = loan.bal * (loan.rate / 100 / 12);
+        monthInterest += intCharge;
+        totalInterest += intCharge;
+        loan.bal += intCharge;
+        
+        // Satisfy the minimum payment first
+        var pmt = Math.min(loan.originalMin, loan.bal);
+        loan.bal -= pmt;
+        availableCash -= pmt;
+        monthPaid += pmt;
+      }
+
+      // Filter out paid-off loans
+      activeLoans = activeLoans.filter(l => l.bal > 0.001);
+      
+      // 2. Allocate Extra Cash Flow (Avalanche or Snowball)
+      if (activeLoans.length > 0 && availableCash > 0.001) {
+        if (strategy === 'avalanche') {
+          activeLoans.sort((a, b) => b.rate - a.rate);
+        } else {
+          activeLoans.sort((a, b) => a.bal - b.bal);
+        }
+        
+        for (var i = 0; i < activeLoans.length; i++) {
+           var loan = activeLoans[i];
+           if (availableCash <= 0) break;
+           var extra = Math.min(availableCash, loan.bal);
+           loan.bal -= extra;
+           availableCash -= extra;
+           monthPaid += extra;
+        }
       }
       
-      totalInterest += interestForMonth;
-      currentBalance -= principalForMonth;
-      
-      yearPaid += (principalForMonth + interestForMonth);
-      yearInterest += interestForMonth;
+      activeLoans = activeLoans.filter(l => l.bal > 0.001);
+      var currentTotalBalance = activeLoans.reduce((s, l) => s + l.bal, 0);
 
-      if (months % 12 === 0 || currentBalance <= 0) {
+      yearPaid += monthPaid;
+      yearInterest += monthInterest;
+
+      if (months % 12 === 0 || activeLoans.length === 0) {
         annualData.push({
           year: Math.ceil(months / 12),
           paid: yearPaid,
           interest: yearInterest,
-          balance: currentBalance,
-          cumulativePrincipal: balance - currentBalance,
+          balance: currentTotalBalance,
+          cumulativePrincipal: totalInitialBalance - currentTotalBalance,
           cumulativeInterest: totalInterest
         });
         yearPaid = 0;
         yearInterest = 0;
-        if (currentBalance <= 0) break;
       }
     }
+    
+    if (months >= 1200) return { months: Infinity, interest: Infinity, annualData: [] };
     return { months: months, interest: totalInterest, annualData: annualData };
   }
 
   function render() {
-    var b = parseMoney(balEl.value);
-    var r = parseMoney(rateEl.value);
-    var p = parseMoney(pmtEl.value);
-    var extra = parseFloat(extraPmtInput.value) || 0;
+    var loans = [];
+    document.querySelectorAll('.loan-row').forEach(function(row) {
+      var b = parseMoney(row.querySelector('.loan-bal').value);
+      var r = parseMoney(row.querySelector('.loan-rate').value);
+      var p = parseMoney(row.querySelector('.loan-pmt').value);
+      if (b > 0) {
+        loans.push({ bal: b, rate: r, pmt: p });
+      }
+    });
 
-    var basePlan = calculatePayoff(b, r, p);
-    var newPlan = calculatePayoff(b, r, p + extra);
+    var extra = parseFloat(extraPmtInput.value) || 0;
+    var strategy = strategySelect.value;
+
+    if (loans.length === 0) {
+      monthsOut.textContent = "0 mo";
+      interestOut.textContent = "$0";
+      savingsBox.style.display = 'none';
+      warningBox.style.display = 'none';
+      tableBodyEl.innerHTML = '';
+      if(payoffChartInstance) payoffChartInstance.destroy();
+      return;
+    }
+
+    var basePlan = calculateMultiPayoff(loans, 0, strategy);
+    var newPlan = calculateMultiPayoff(loans, extra, strategy);
 
     if (newPlan.months === Infinity) {
       monthsOut.textContent = "Never";
       interestOut.textContent = "Infinite";
       savingsBox.style.display = 'none';
+      warningBox.style.display = 'block';
     } else {
+      warningBox.style.display = 'none';
       monthsOut.textContent = formatTime(newPlan.months);
       interestOut.textContent = fmtMoney(newPlan.interest);
       
@@ -340,74 +478,70 @@
     if (payoffChartInstance) {
         payoffChartInstance.destroy();
     }
-    payoffChartInstance = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: labels,
-            datasets: [
-                { label: 'Cumulative Principal Paid', data: principalData, backgroundColor: principalColor },
-                { label: 'Cumulative Interest Paid', data: interestData, backgroundColor: interestColor }
-            ]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            interaction: { mode: 'index' },
-            scales: {
-                x: { 
-                    stacked: true, 
-                    grid: { display: false },
-                    title: { display: true, text: 'Year', color: textColor, font: { weight: '600' } }
-                },
-                y: { 
-                    stacked: true, 
-                    ticks: {
-                        color: textColor,
-                        callback: function(value) {
-                            if (value >= 1000000) return '$' + (value / 1000000).toFixed(1).replace('.0', '') + 'M';
-                            if (value >= 1000) return '$' + Math.round(value / 1000) + 'K';
-                            return '$' + value.toLocaleString();
-                        }
-                    }
-                }
-            },
-            plugins: {
-                legend: { display: false },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            let label = context.dataset.label || '';
-                            if (label) { label += ': '; }
-                            if (context.parsed.y !== null) {
-                                label += fmtMoney(context.parsed.y);
-                            }
-                            return label;
-                        }
-                    }
-                }
-            }
-        }
-    });
+    
+    if (newPlan.months !== Infinity && newPlan.annualData.length > 0) {
+      payoffChartInstance = new Chart(ctx, {
+          type: 'bar',
+          data: {
+              labels: labels,
+              datasets: [
+                  { label: 'Cumulative Principal Paid', data: principalData, backgroundColor: principalColor },
+                  { label: 'Cumulative Interest Paid', data: interestData, backgroundColor: interestColor }
+              ]
+          },
+          options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              interaction: { mode: 'index' },
+              scales: {
+                  x: { 
+                      stacked: true, 
+                      grid: { display: false },
+                      title: { display: true, text: 'Year', color: textColor, font: { weight: '600' } }
+                  },
+                  y: { 
+                      stacked: true, 
+                      ticks: {
+                          color: textColor,
+                          callback: function(value) {
+                              if (value >= 1000000) return '$' + (value / 1000000).toFixed(1).replace('.0', '') + 'M';
+                              if (value >= 1000) return '$' + Math.round(value / 1000) + 'K';
+                              return '$' + value.toLocaleString();
+                          }
+                      }
+                  }
+              },
+              plugins: {
+                  legend: { display: false },
+                  tooltip: {
+                      callbacks: {
+                          label: function(context) {
+                              let label = context.dataset.label || '';
+                              if (label) { label += ': '; }
+                              if (context.parsed.y !== null) {
+                                  label += fmtMoney(context.parsed.y);
+                              }
+                              return label;
+                          }
+                      }
+                  }
+              }
+          }
+      });
+    }
   }
 
-  // Event Listeners
+  // Bind top-level controls
   extraPmtSlider.addEventListener('input', function(e) { 
     extraPmtInput.value = e.target.value; 
     render(); 
   });
-  
   extraPmtInput.addEventListener('input', function(e) { 
     var val = parseFloat(e.target.value) || 0;
     extraPmtSlider.value = Math.min(val, 1000);
     render(); 
   });
-
-  [balEl, rateEl, pmtEl].forEach(function(el) { 
-    el.addEventListener('input', render); 
-  });
-  
-  balEl.addEventListener('blur', function() { balEl.value = parseMoney(balEl.value).toLocaleString('en-US'); });
-  pmtEl.addEventListener('blur', function() { pmtEl.value = parseMoney(pmtEl.value).toLocaleString('en-US'); });
+  strategySelect.addEventListener('change', render);
 
   render();
 })();
