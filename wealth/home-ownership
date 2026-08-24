@@ -3,16 +3,20 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Mortgage Calculator | Wagner Wealth and Health</title>
+<title>Home Ownership | Wagner Wealth and Health</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!-- Load Chart.js Library -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
   :root {
     --ink-900: #FFFFFF; --ink-800: #F8F9FA; --ink-700: #E9ECEF; --line: #DEE2E6;
     --text-hi: #000000; --text-lo: #5C6C7B; --text-muted: #5C6C7B; --accent: #2F6FA8;
-    --gold: #3F6EA6; --rust: #6C93BE; --olive: #274763; --steel: #C17B3A;
+    --gold: #3F6EA6; /* Blue for Mortgage */
+    --steel: #C17B3A; /* Orange for Additional Costs */
     --font-display: 'Open Sans', sans-serif; --font-body: 'Open Sans', sans-serif; --font-mono: 'Open Sans', sans-serif;
+    --slider-color: #5C6C7B;
   }
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; }
@@ -31,38 +35,49 @@
   .brand-header:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
   .brand-logo { height: 90px; width: auto; display: block; }
 
-  .control-block { margin-bottom: 26px; }
+  .control-block { margin-bottom: 26px; width: 100%; }
   .control-label-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; }
   .control-label-row label { font-size: 13px; font-weight: 600; letter-spacing: 0.02em; color: var(--text-hi); }
-  .control-value { font-family: var(--font-mono); font-size: 13px; color: var(--accent); font-weight: 600; }
+  
+  .money-wrap { position: relative; width: 100%; }
+  .money-prefix { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); font-family: var(--font-mono); font-size: 18px; color: var(--text-muted); pointer-events: none; }
+  .money-input {
+    width: 100%; background: #FFFFFF; border: 1px solid var(--line); border-radius: 10px; color: var(--text-hi);
+    font-family: var(--font-mono); font-size: 18px; font-weight: 500; padding: 12px 16px 12px 30px; outline: none;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
+  }
+  .money-input:focus-visible { border-color: var(--accent); outline: 2px solid var(--accent); outline-offset: 2px; }
 
-  input[type="range"].slider { -webkit-appearance: none; appearance: none; width: 100%; height: 6px; border-radius: 999px; background: var(--ink-700); outline: none; cursor: pointer; margin: 0; }
-  input[type="range"].slider:focus-visible { outline: 2px solid var(--accent); outline-offset: 5px; }
-  input[type="range"].slider::-webkit-slider-runnable-track { height: 6px; border-radius: 999px; background: transparent; }
-  input[type="range"].slider::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; margin-top: -6px; border-radius: 50%; background: #FFFFFF; border: 3px solid var(--accent); box-shadow: 0 2px 4px rgba(0,0,0,0.15); cursor: pointer; }
-  input[type="range"].slider::-moz-range-track { height: 6px; border-radius: 999px; background: transparent; }
-  input[type="range"].slider::-moz-range-thumb { width: 14px; height: 14px; border-radius: 50%; background: #FFFFFF; border: 3px solid var(--accent); box-shadow: 0 2px 4px rgba(0,0,0,0.15); cursor: pointer; }
-
-  .tick-row { display: flex; justify-content: space-between; margin-top: 10px; font-family: var(--font-mono); font-size: 10px; color: var(--text-muted); }
-  .tick-row--3 { display: grid; grid-template-columns: repeat(3, 1fr); text-align: center; }
-  .tick-row--3 span { display: block; width: 100%; text-align: center; }
-  .tick-row--3 span:first-child { text-align: left; }
-  .tick-row--3 span:last-child { text-align: right; }
-  .tick-row span.is-active { color: var(--accent); font-weight: 600; }
+  input[type="range"].slider { -webkit-appearance: none; appearance: none; width: 100%; height: 6px; border-radius: 999px; background: var(--ink-700); outline: none; cursor: pointer; margin: 10px 0 0 0; }
+  input[type="range"].slider:focus-visible { outline: 2px solid var(--slider-color); outline-offset: 5px; }
+  input[type="range"].slider::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; margin-top: -6px; border-radius: 50%; background: #FFFFFF; border: 3px solid var(--slider-color); box-shadow: 0 2px 4px rgba(0,0,0,0.15); cursor: pointer; }
+  input[type="range"].slider::-moz-range-thumb { width: 14px; height: 14px; border-radius: 50%; background: #FFFFFF; border: 3px solid var(--slider-color); box-shadow: 0 2px 4px rgba(0,0,0,0.15); cursor: pointer; }
 
   .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; margin-bottom: 8px; }
   @media (max-width: 480px) { .row2 { grid-template-columns: 1fr; gap: 22px; } }
 
-  .money-wrap { position: relative; }
-  .money-prefix { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); font-family: var(--font-mono); font-size: 18px; color: var(--text-muted); pointer-events: none; }
-  .money-input { width: 100%; background: #FFFFFF; border: 1px solid var(--line); border-radius: 10px; color: var(--text-hi); font-family: var(--font-mono); font-size: 18px; font-weight: 500; padding: 12px 16px 12px 30px; outline: none; box-shadow: inset 0 1px 2px rgba(0,0,0,0.05); }
-  .money-input:focus-visible { border-color: var(--accent); outline: 2px solid var(--accent); outline-offset: 2px; }
+  .checkbox-row { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: var(--text-hi); margin: 0 0 20px; cursor: pointer; user-select: none; }
+  .checkbox-row input[type="checkbox"] { accent-color: var(--accent); width: 16px; height: 16px; cursor: pointer; flex-shrink: 0; }
+
+  /* Term Toggle Pill styling */
+  .term-toggle { display: flex; gap: 12px; margin-top: 4px; }
+  .term-toggle label { display: block; flex: 1; cursor: pointer; margin: 0; }
+  .term-toggle input { display: none; }
+  .term-toggle span { 
+    display: flex; align-items: center; justify-content: center;
+    height: 44px; border-radius: 22px; border: 2px solid var(--line); background: #FFFFFF;
+    font-family: var(--font-mono); font-weight: 600; font-size: 15px;
+    color: var(--text-lo); transition: all 150ms ease;
+  }
+  .term-toggle input:checked + span {
+    background: var(--slider-color); border-color: var(--slider-color); color: #FFF;
+  }
 
   .results { margin-top: 34px; padding-top: 24px; border-top: 2px solid var(--line); }
   .headline { text-align: left; margin-bottom: 22px; }
   .headline .label { font-size: 12px; color: var(--text-lo); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; margin-bottom: 6px; }
   .headline .value { font-family: var(--font-mono); font-size: 40px; font-weight: 700; color: var(--text-hi); }
-  .headline .sub { font-size: 12.5px; color: var(--text-lo); margin-top: 6px; }
+  .headline .sub { font-size: 13px; color: var(--text-lo); margin-top: 6px; }
 
   .bar { display: flex; width: 100%; height: 14px; border-radius: 999px; overflow: hidden; background: var(--ink-700); margin-bottom: 16px; }
   .bar__seg { height: 100%; transition: width 420ms cubic-bezier(0.4, 0, 0.2, 1); }
@@ -71,7 +86,7 @@
   .legend__item b { color: var(--text-hi); font-weight: 600; margin-left: 1px; }
   .swatch { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
 
-  .stat-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 22px 0; }
+  .stat-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 26px 0 22px; }
   @media (max-width: 480px) { .stat-row { grid-template-columns: 1fr; } }
   .stat .label { font-size: 12px; color: var(--text-lo); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; margin-bottom: 6px; }
   .stat .value { font-family: var(--font-mono); font-size: 20px; font-weight: 700; color: var(--text-hi); }
@@ -95,7 +110,7 @@
   <div class="card__body">
     <div class="header-row">
       <div class="header-text">
-        <h1>Mortgage Calculator</h1>
+        <h1>Home Ownership</h1>
         <p class="dek">Estimate your monthly payment and total cost across the life of the loan.</p>
       </div>
       <a class="brand-header" href="https://wagnerwh.com" target="_blank" rel="noopener noreferrer" aria-label="Wagner Wealth and Health home">
@@ -103,65 +118,116 @@
       </a>
     </div>
 
+    <!-- Home Price -->
     <div class="control-block">
-      <div class="control-label-row"><label for="price">Home Price</label></div>
-      <div class="money-wrap"><span class="money-prefix">$</span>
-        <input type="text" inputmode="numeric" id="price" class="money-input" value="450,000">
+      <div class="control-label-row" style="align-items: center;">
+        <label for="priceInput">Home Price</label>
+        <div class="money-wrap" style="width: 140px;">
+          <span class="money-prefix" style="font-size: 15px;">$</span>
+          <input type="text" inputmode="numeric" id="priceInput" class="money-input" style="padding: 8px 12px 8px 30px; font-size: 15px; text-align: right;" value="450,000">
+        </div>
       </div>
+      <input type="range" id="priceSlider" class="slider" min="100000" max="1000000" step="5000" value="450000">
     </div>
 
-    <div class="control-block">
-      <div class="control-label-row">
-        <label for="down">Down Payment</label>
-        <span class="control-value" id="downValue">20% &middot; $90,000</span>
-      </div>
-      <input type="range" id="down" class="slider" min="0" max="50" step="1" value="20">
-    </div>
-
+    <!-- Down Payment & Interest Rate -->
     <div class="row2">
       <div class="control-block">
-        <div class="control-label-row">
-          <label for="rate">Interest Rate</label>
-          <span class="control-value" id="rateValue">6.5%</span>
+        <div class="control-label-row" style="align-items: center;">
+          <label for="downInput">Down Payment <span id="downAmtOut" style="font-weight: normal; color: var(--text-muted); margin-left: 6px;"></span></label>
+          <div class="money-wrap" style="width: 90px;">
+            <input type="number" id="downInput" class="money-input" style="padding: 8px 24px 8px 12px; font-size: 15px; text-align: right;" value="20" min="0" step="1">
+            <span class="money-prefix" style="left: auto; right: 12px; font-size: 14px;">%</span>
+          </div>
         </div>
-        <input type="range" id="rate" class="slider" min="2" max="10" step="0.125" value="6.5">
+        <input type="range" id="downSlider" class="slider" min="0" max="20" step="1" value="20">
       </div>
+      
       <div class="control-block">
-        <div class="control-label-row">
-          <label for="term">Loan Term</label>
-          <span class="control-value" id="termValue">30 yr</span>
+        <div class="control-label-row" style="align-items: center;">
+          <label for="rateInput">Interest Rate</label>
+          <div class="money-wrap" style="width: 90px;">
+            <input type="number" id="rateInput" class="money-input" style="padding: 8px 24px 8px 12px; font-size: 15px; text-align: right;" value="6.5" min="1" max="15" step="0.125">
+            <span class="money-prefix" style="left: auto; right: 12px; font-size: 14px;">%</span>
+          </div>
         </div>
-        <input type="range" id="term" class="slider" min="1" max="3" step="1" value="3">
-        <div class="tick-row tick-row--3" id="termTicks">
-          <span data-tick="1">15 yr</span>
-          <span data-tick="2">20 yr</span>
-          <span data-tick="3">30 yr</span>
+        <input type="range" id="rateSlider" class="slider" min="2" max="10" step="0.125" value="6.5">
+      </div>
+    </div>
+
+    <!-- Term & Costs Toggle -->
+    <div class="row2" style="margin-bottom: 24px;">
+      <div class="control-block" style="margin-bottom: 0;">
+        <div class="control-label-row"><label>Loan Term</label></div>
+        <div class="term-toggle">
+          <label><input type="radio" name="termOption" value="15"><span>15 Year</span></label>
+          <label><input type="radio" name="termOption" value="30" checked><span>30 Year</span></label>
+        </div>
+      </div>
+    </div>
+    
+    <label class="checkbox-row" for="manualCostsToggle">
+      <input type="checkbox" id="manualCostsToggle">
+      Manually Adjust Additional Costs
+    </label>
+
+    <!-- Additional Costs Block (Hidden by Default) -->
+    <div id="additionalCostsBlock" style="display: none; padding-top: 12px; border-top: 1px solid var(--line);">
+      <div class="row2">
+        <div class="control-block">
+          <div class="control-label-row" style="align-items: center;">
+            <label for="taxInput">Property Tax <span id="taxAmtOut" style="font-weight: normal; color: var(--text-muted); margin-left: 6px;"></span></label>
+            <div class="money-wrap" style="width: 85px;">
+              <input type="number" id="taxInput" class="money-input" style="padding: 8px 22px 8px 8px; font-size: 15px; text-align: right;" value="1.1" min="0" step="0.1">
+              <span class="money-prefix" style="left: auto; right: 12px; font-size: 14px;">%</span>
+            </div>
+          </div>
+          <input type="range" id="taxSlider" class="slider" min="0" max="2.5" step="0.1" value="1.1">
+        </div>
+        <div class="control-block">
+          <div class="control-label-row" style="align-items: center;">
+            <label for="insuranceInput">Insurance <span style="font-weight: normal; color: var(--text-muted); margin-left: 4px;">Yearly</span></label>
+            <div class="money-wrap" style="width: 100px;">
+              <span class="money-prefix" style="font-size: 15px;">$</span>
+              <input type="text" inputmode="numeric" id="insuranceInput" class="money-input" style="padding: 8px 12px 8px 24px; font-size: 15px; text-align: right;" value="2,700">
+            </div>
+          </div>
+          <input type="range" id="insuranceSlider" class="slider" min="0" max="10000" step="50" value="2700">
+        </div>
+      </div>
+      
+      <div class="row2">
+        <div class="control-block">
+          <div class="control-label-row" style="align-items: center;">
+            <label for="utilInput">Utilities <span style="font-weight: normal; color: var(--text-muted); margin-left: 4px;">Monthly</span></label>
+            <div class="money-wrap" style="width: 100px;">
+              <span class="money-prefix" style="font-size: 15px;">$</span>
+              <input type="text" inputmode="numeric" id="utilInput" class="money-input" style="padding: 8px 12px 8px 24px; font-size: 15px; text-align: right;" value="525">
+            </div>
+          </div>
+          <input type="range" id="utilSlider" class="slider" min="0" max="2000" step="25" value="525">
+        </div>
+        <div class="control-block">
+          <div class="control-label-row" style="align-items: center;">
+            <label for="maintInput">Maintenance <span id="maintAmtOut" style="font-weight: normal; color: var(--text-muted); margin-left: 6px;"></span></label>
+            <div class="money-wrap" style="width: 85px;">
+              <input type="number" id="maintInput" class="money-input" style="padding: 8px 22px 8px 8px; font-size: 15px; text-align: right;" value="1.0" min="0" step="0.1">
+              <span class="money-prefix" style="left: auto; right: 12px; font-size: 14px;">%</span>
+            </div>
+          </div>
+          <input type="range" id="maintSlider" class="slider" min="0" max="5" step="0.1" value="1.0">
         </div>
       </div>
     </div>
 
-    <div class="row2">
-      <div class="control-block">
-        <div class="control-label-row">
-          <label for="tax">Property Tax (annual)</label>
-          <span class="control-value" id="taxValue">1.1%</span>
-        </div>
-        <input type="range" id="tax" class="slider" min="0" max="3" step="0.1" value="1.1">
-      </div>
-      <div class="control-block">
-        <div class="control-label-row"><label for="insurance">Home Insurance (annual)</label></div>
-        <div class="money-wrap"><span class="money-prefix">$</span>
-          <input type="text" inputmode="numeric" id="insurance" class="money-input" value="1,600">
-        </div>
-      </div>
-    </div>
-
+    <!-- Results Section -->
     <div class="results">
       <div class="headline">
         <div class="label">Total Monthly Payment</div>
         <div class="value" id="totalMonthlyOut">$0</div>
         <div class="sub" id="loanAmountOut"></div>
       </div>
+      
       <div class="bar" id="bar"></div>
       <div class="legend" id="legend"></div>
 
@@ -185,17 +251,34 @@
 </div>
 <script>
 (function () {
-  var priceInput = document.getElementById('price');
-  var downInput = document.getElementById('down');
-  var downValueEl = document.getElementById('downValue');
-  var rateInput = document.getElementById('rate');
-  var rateValueEl = document.getElementById('rateValue');
-  var termInput = document.getElementById('term');
-  var termValueEl = document.getElementById('termValue');
-  var termTicks = document.querySelectorAll('#termTicks span');
-  var taxInput = document.getElementById('tax');
-  var taxValueEl = document.getElementById('taxValue');
-  var insuranceInput = document.getElementById('insurance');
+  // Elements
+  var priceInput = document.getElementById('priceInput');
+  var priceSlider = document.getElementById('priceSlider');
+  
+  var downInput = document.getElementById('downInput');
+  var downSlider = document.getElementById('downSlider');
+  var downAmtOut = document.getElementById('downAmtOut');
+  
+  var rateInput = document.getElementById('rateInput');
+  var rateSlider = document.getElementById('rateSlider');
+  
+  var termRadios = document.getElementsByName('termOption');
+  
+  var manualCostsToggle = document.getElementById('manualCostsToggle');
+  var additionalCostsBlock = document.getElementById('additionalCostsBlock');
+  
+  var taxInput = document.getElementById('taxInput');
+  var taxSlider = document.getElementById('taxSlider');
+  var taxAmtOut = document.getElementById('taxAmtOut');
+  
+  var insuranceInput = document.getElementById('insuranceInput');
+  var insuranceSlider = document.getElementById('insuranceSlider');
+  var utilInput = document.getElementById('utilInput');
+  var utilSlider = document.getElementById('utilSlider');
+  
+  var maintInput = document.getElementById('maintInput');
+  var maintSlider = document.getElementById('maintSlider');
+  var maintAmtOut = document.getElementById('maintAmtOut');
 
   var totalMonthlyOut = document.getElementById('totalMonthlyOut');
   var loanAmountOut = document.getElementById('loanAmountOut');
@@ -206,21 +289,22 @@
   var tableBodyEl = document.getElementById('tableBody');
   var copySummaryBtn = document.getElementById('copySummaryBtn');
 
-  var TERM_YEARS = [15, 20, 30];
   var lastResult = null;
 
+  // Utility Functions
   function parseMoney(raw) {
-    var digits = String(raw).replace(/[^0-9]/g, '');
+    var digits = String(raw).replace(/[^0-9.]/g, '');
     return digits ? parseInt(digits, 10) : 0;
   }
   function fmtMoney(n) { return '$' + Math.round(n).toLocaleString('en-US'); }
-  function setFill(input) {
-    var min = +input.min, max = +input.max, val = +input.value;
+  function setFill(slider) {
+    var min = parseFloat(slider.min);
+    var max = parseFloat(slider.max);
+    var val = parseFloat(slider.value);
     var pct = ((val - min) / (max - min)) * 100;
-    input.style.background = 'linear-gradient(to right, var(--accent) 0%, var(--accent) ' + pct + '%, var(--ink-700) ' + pct + '%, var(--ink-700) 100%)';
-  }
-  function updateTicks(ticks, value) {
-    ticks.forEach(function (t) { t.classList.toggle('is-active', +t.getAttribute('data-tick') === value); });
+    if (pct > 100) pct = 100;
+    if (pct < 0) pct = 0;
+    slider.style.background = 'linear-gradient(to right, var(--slider-color) 0%, var(--slider-color) ' + pct + '%, var(--ink-700) ' + pct + '%, var(--ink-700) 100%)';
   }
 
   function monthlyPI(principal, annualRatePct, years) {
@@ -238,6 +322,7 @@
     var rows = [];
     var yearPrincipal = 0, yearInterest = 0;
     var totalInterest = 0;
+    
     for (var m = 1; m <= n; m++) {
       var interest = bal * r;
       var princ = payment - interest;
@@ -255,46 +340,82 @@
 
   function render() {
     var price = parseMoney(priceInput.value);
-    var downPct = +downInput.value;
-    var downAmt = price * downPct / 100;
-    var loanAmount = price - downAmt;
-    var rate = +rateInput.value;
-    var termYears = TERM_YEARS[+termInput.value - 1];
-    var taxPct = +taxInput.value;
-    var insurance = parseMoney(insuranceInput.value);
+    var isManualCosts = manualCostsToggle.checked;
+    
+    additionalCostsBlock.style.display = isManualCosts ? 'block' : 'none';
 
-    downValueEl.textContent = downPct + '% \u00B7 ' + fmtMoney(downAmt);
-    rateValueEl.textContent = rate.toFixed(3).replace(/0+$/,'').replace(/\.$/,'') + '%';
-    termValueEl.textContent = termYears + ' yr';
-    updateTicks(termTicks, +termInput.value);
-    setFill(downInput); setFill(rateInput); setFill(termInput); setFill(taxInput);
+    // Synchronize default calculated values to the hidden sliders/inputs if toggle is off
+    if (!isManualCosts) {
+      var defaultIns = price * 0.006;
+      var defaultUtil = (price * 0.014) / 12;
+      
+      insuranceSlider.value = defaultIns;
+      insuranceInput.value = Math.round(defaultIns).toLocaleString('en-US');
+      
+      utilSlider.value = defaultUtil;
+      utilInput.value = Math.round(defaultUtil).toLocaleString('en-US');
+    }
+
+    var downPct = parseFloat(downInput.value) || 0;
+    var downAmt = price * (downPct / 100);
+    downAmtOut.textContent = '(' + fmtMoney(downAmt) + ')';
+    
+    var loanAmount = price - downAmt;
+    var rate = parseFloat(rateInput.value) || 0;
+    
+    var termYears = 30;
+    for (var i=0; i<termRadios.length; i++) {
+        if (termRadios[i].checked) { termYears = parseInt(termRadios[i].value, 10); break; }
+    }
+    
+    var monthlyTax = 0, monthlyInsurance = 0, monthlyUtil = 0, monthlyMaint = 0, totalAdditional = 0;
+    var taxPct = parseFloat(taxInput.value) || 0;
+    var maintPct = parseFloat(maintInput.value) || 0;
+    
+    taxAmtOut.textContent = '(' + fmtMoney(price * (taxPct / 100)) + '/Year)';
+    maintAmtOut.textContent = '(' + fmtMoney(price * (maintPct / 100)) + '/Year)';
+
+    if (isManualCosts) {
+        var insuranceAmt = parseMoney(insuranceInput.value);
+        var utilAmt = parseMoney(utilInput.value);
+        
+        monthlyTax = (price * (taxPct / 100)) / 12;
+        monthlyInsurance = insuranceAmt / 12;
+        monthlyUtil = utilAmt;
+        monthlyMaint = (price * (maintPct / 100)) / 12;
+        totalAdditional = monthlyTax + monthlyInsurance + monthlyUtil + monthlyMaint;
+    } else {
+        // Default assumption: 4.1% of home price annually (Tax 1.1% + Maint 1.0% + Ins 0.6% + Util 1.4%)
+        totalAdditional = (price * 0.041) / 12;
+    }
+
+    // Update Slider Fills
+    [priceSlider, downSlider, rateSlider, taxSlider, insuranceSlider, utilSlider, maintSlider].forEach(setFill);
 
     var amort = amortizeYearly(loanAmount, rate, termYears);
     var monthlyPI_ = amort.payment;
-    var monthlyTax = (price * taxPct / 100) / 12;
-    var monthlyInsurance = insurance / 12;
-    var totalMonthly = monthlyPI_ + monthlyTax + monthlyInsurance;
+    var totalMonthly = monthlyPI_ + totalAdditional;
 
+    // Render Outputs
     totalMonthlyOut.textContent = fmtMoney(totalMonthly);
-    loanAmountOut.textContent = 'Loan amount ' + fmtMoney(loanAmount) + ' \u00B7 P&I ' + fmtMoney(monthlyPI_) + '/mo';
+    loanAmountOut.textContent = 'Loan Amount: ' + fmtMoney(loanAmount);
 
-    var piPct = (monthlyPI_ / totalMonthly) * 100;
-    var taxPctOfTotal = (monthlyTax / totalMonthly) * 100;
-    var insPctOfTotal = (monthlyInsurance / totalMonthly) * 100;
+    var piPct = totalMonthly > 0 ? (monthlyPI_ / totalMonthly) * 100 : 0;
+    var additionalPct = totalMonthly > 0 ? (totalAdditional / totalMonthly) * 100 : 0;
+    
     barEl.innerHTML =
       '<div class="bar__seg" style="width:' + piPct.toFixed(2) + '%;background:var(--gold)"></div>' +
-      '<div class="bar__seg" style="width:' + taxPctOfTotal.toFixed(2) + '%;background:var(--steel)"></div>' +
-      '<div class="bar__seg" style="width:' + insPctOfTotal.toFixed(2) + '%;background:var(--rust)"></div>';
+      '<div class="bar__seg" style="width:' + additionalPct.toFixed(2) + '%;background:var(--steel)"></div>';
+      
     legendEl.innerHTML =
-      '<div class="legend__item"><span class="swatch" style="background:var(--gold)"></span>Principal &amp; Interest <b>' + fmtMoney(monthlyPI_) + '</b></div>' +
-      '<div class="legend__item"><span class="swatch" style="background:var(--steel)"></span>Property Tax <b>' + fmtMoney(monthlyTax) + '</b></div>' +
-      '<div class="legend__item"><span class="swatch" style="background:var(--rust)"></span>Insurance <b>' + fmtMoney(monthlyInsurance) + '</b></div>';
+      '<div class="legend__item"><span class="swatch" style="background:var(--gold)"></span>Mortgage <b>' + fmtMoney(monthlyPI_) + '</b></div>' +
+      '<div class="legend__item"><span class="swatch" style="background:var(--steel)"></span>Additional Costs <b>' + fmtMoney(totalAdditional) + '</b></div>';
 
     totalInterestOut.textContent = fmtMoney(amort.totalInterest);
     totalCostOut.textContent = fmtMoney(loanAmount + amort.totalInterest);
 
     tableBodyEl.innerHTML = '';
-    var step = termYears > 20 ? 5 : (termYears > 10 ? 2 : 1);
+    var step = 5; // Always do every 5 years
     amort.rows.forEach(function (r) {
       if (r.year % step !== 0 && r.year !== amort.rows.length) return;
       var tr = document.createElement('tr');
@@ -304,8 +425,9 @@
 
     lastResult = {
       price: price, downPct: downPct, downAmt: downAmt, loanAmount: loanAmount, rate: rate, termYears: termYears,
-      taxPct: taxPct, insurance: insurance, monthlyPI: monthlyPI_, monthlyTax: monthlyTax, monthlyInsurance: monthlyInsurance,
-      totalMonthly: totalMonthly, totalInterest: amort.totalInterest
+      taxPct: taxPct, insurance: isManualCosts ? parseMoney(insuranceInput.value) : (price * 0.006), 
+      monthlyPI: monthlyPI_, monthlyTax: monthlyTax, monthlyInsurance: monthlyInsurance,
+      totalMonthly: totalMonthly, totalAdditional: totalAdditional, totalInterest: amort.totalInterest, isManualCosts: isManualCosts
     };
   }
 
@@ -327,24 +449,53 @@
   copySummaryBtn.addEventListener('click', function () {
     if (!lastResult) return;
     var s = lastResult;
-    var text = 'Mortgage Calculator \u2014 Wagner Wealth and Health\n' +
+    var text = 'Home Ownership Calculator \u2014 Wagner Wealth and Health\n' +
       'Home Price: ' + fmtMoney(s.price) + '\n' +
       'Down Payment: ' + s.downPct + '% (' + fmtMoney(s.downAmt) + ')\n' +
       'Loan Amount: ' + fmtMoney(s.loanAmount) + '\n' +
       'Interest Rate: ' + s.rate + '%\n' +
       'Term: ' + s.termYears + ' years\n\n' +
-      'Monthly P&I: ' + fmtMoney(s.monthlyPI) + '\n' +
-      'Monthly Tax: ' + fmtMoney(s.monthlyTax) + '\n' +
-      'Monthly Insurance: ' + fmtMoney(s.monthlyInsurance) + '\n' +
+      'Monthly Mortgage (P&I): ' + fmtMoney(s.monthlyPI) + '\n' +
+      'Monthly Additional Costs: ' + fmtMoney(s.totalAdditional) + (s.isManualCosts ? '' : ' (Default 4.1%/yr assumption)') + '\n' +
       'Total Monthly Payment: ' + fmtMoney(s.totalMonthly) + '\n' +
       'Total Interest Over Loan: ' + fmtMoney(s.totalInterest);
     copyText(text, copySummaryBtn, 'Summary Copied!');
   });
 
-  [downInput, rateInput, termInput, taxInput].forEach(function (el) { el.addEventListener('input', render); });
-  [priceInput, insuranceInput].forEach(function (el) { el.addEventListener('input', render); });
-  priceInput.addEventListener('blur', function () { priceInput.value = parseMoney(priceInput.value).toLocaleString('en-US'); });
-  insuranceInput.addEventListener('blur', function () { insuranceInput.value = parseMoney(insuranceInput.value).toLocaleString('en-US'); });
+  // Wiring Input Functions that decouple exact match for inputs extending beyond sliders
+  function wireFlexibleInput(slider, input, isMoney, isFloat) {
+    slider.addEventListener('input', function(e) {
+      input.value = isMoney ? parseMoney(e.target.value).toLocaleString('en-US') : e.target.value;
+      render();
+    });
+    input.addEventListener('input', function(e) {
+      var val = isMoney ? parseMoney(e.target.value) : parseFloat(e.target.value);
+      if (!isNaN(val)) {
+        slider.value = Math.min(parseFloat(slider.max), Math.max(parseFloat(slider.min), val));
+      }
+      render();
+    });
+    input.addEventListener('blur', function(e) {
+      var val = isMoney ? parseMoney(e.target.value) : parseFloat(e.target.value);
+      if (isNaN(val)) val = 0;
+      input.value = isMoney ? val.toLocaleString('en-US') : (isFloat ? val : val);
+      slider.value = Math.min(parseFloat(slider.max), Math.max(parseFloat(slider.min), val));
+      render();
+    });
+  }
+
+  // Bind Elements
+  manualCostsToggle.addEventListener('change', render);
+  for (var i=0; i<termRadios.length; i++) { termRadios[i].addEventListener('change', render); }
+
+  wireFlexibleInput(priceSlider, priceInput, true, false);
+  wireFlexibleInput(insuranceSlider, insuranceInput, true, false);
+  wireFlexibleInput(utilSlider, utilInput, true, false);
+
+  wireFlexibleInput(downSlider, downInput, false, false);
+  wireFlexibleInput(rateSlider, rateInput, false, true);
+  wireFlexibleInput(taxSlider, taxInput, false, true);
+  wireFlexibleInput(maintSlider, maintInput, false, true);
 
   render();
 })();
