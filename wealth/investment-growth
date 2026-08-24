@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Investment Growth Calculator | Wagner Wealth and Health</title>
+<title>Investment Growth | Wagner Wealth and Health</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -113,7 +113,7 @@
   <div class="card__body">
     <div class="header-row">
       <div class="header-text">
-        <h1>Investment Growth Calculator</h1>
+        <h1>Investment Growth</h1>
         <p class="dek">See how a lump sum plus regular contributions could grow over time.</p>
       </div>
       <a class="brand-header" href="https://wagnerwh.com" target="_blank" rel="noopener noreferrer" aria-label="Wagner Wealth and Health home">
