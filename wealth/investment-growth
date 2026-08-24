@@ -52,16 +52,8 @@
   .control-block { margin-bottom: 26px; }
   .control-label-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; }
   .control-label-row label { font-size: 13px; font-weight: 600; letter-spacing: 0.02em; color: var(--text-hi); }
-  .control-value { font-family: var(--font-mono); font-size: 13px; color: var(--slider-color); font-weight: 600; }
-  .control-value-input {
-    font-family: var(--font-mono); font-size: 13px; color: var(--slider-color); font-weight: 600;
-    background: transparent; border: none; border-bottom: 1px dashed var(--text-muted);
-    width: 56px; text-align: right; padding: 0 0 1px; -moz-appearance: textfield;
-  }
-  .control-value-input::-webkit-inner-spin-button, .control-value-input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
-  .control-value-input:focus-visible { outline: none; border-bottom-color: var(--accent); }
 
-  input[type="range"].slider { -webkit-appearance: none; appearance: none; width: 100%; height: 6px; border-radius: 999px; background: var(--ink-700); outline: none; cursor: pointer; margin: 0; }
+  input[type="range"].slider { -webkit-appearance: none; appearance: none; width: 100%; height: 6px; border-radius: 999px; background: var(--ink-700); outline: none; cursor: pointer; margin: 10px 0 0 0; }
   input[type="range"].slider:focus-visible { outline: 2px solid var(--slider-color); outline-offset: 5px; }
   input[type="range"].slider::-webkit-slider-runnable-track { height: 6px; border-radius: 999px; background: transparent; }
   input[type="range"].slider::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; margin-top: -6px; border-radius: 50%; background: #FFFFFF; border: 3px solid var(--slider-color); box-shadow: 0 2px 4px rgba(0,0,0,0.15); cursor: pointer; }
@@ -137,19 +129,24 @@
     </div>
 
     <div class="control-block">
-      <div class="control-label-row">
-        <label for="rate">Expected Annual Return</label>
-        <span class="control-value" id="rateValue">7.0%</span>
+      <div class="control-label-row" style="align-items: center;">
+        <label for="rateInput">Annual Return</label>
+        <div class="money-wrap" style="width: 100px;">
+          <input type="number" id="rateInput" class="money-input" style="padding: 8px 24px 8px 12px; font-size: 15px; text-align: right;" value="7.0" min="0" max="12" step="0.1">
+          <span class="money-prefix" style="left: auto; right: 12px; font-size: 14px;">%</span>
+        </div>
       </div>
-      <input type="range" id="rate" class="slider" min="0" max="12" step="0.5" value="7">
+      <input type="range" id="rateSlider" class="slider" min="0" max="12" step="0.5" value="7">
     </div>
 
     <div class="control-block">
-      <div class="control-label-row">
-        <label for="years">Years to Grow</label>
-        <input type="number" class="control-value-input" id="yearsValue" value="25" min="1" max="50">
+      <div class="control-label-row" style="align-items: center;">
+        <label for="yearsInput">Timeline (Years)</label>
+        <div class="money-wrap" style="width: 100px;">
+          <input type="number" id="yearsInput" class="money-input" style="padding: 8px 12px; font-size: 15px; text-align: right;" value="25" min="1" max="50">
+        </div>
       </div>
-      <input type="range" id="years" class="slider" min="1" max="50" step="1" value="25">
+      <input type="range" id="yearsSlider" class="slider" min="1" max="50" step="1" value="25">
     </div>
 
     <div class="results">
@@ -182,10 +179,10 @@
 (function () {
   var initialInput = document.getElementById('initial');
   var monthlyInput = document.getElementById('monthly');
-  var rateInput = document.getElementById('rate');
-  var rateValueEl = document.getElementById('rateValue');
-  var yearsInput = document.getElementById('years');
-  var yearsValueEl = document.getElementById('yearsValue');
+  var rateInput = document.getElementById('rateInput');
+  var rateSlider = document.getElementById('rateSlider');
+  var yearsInput = document.getElementById('yearsInput');
+  var yearsSlider = document.getElementById('yearsSlider');
   var fvOutEl = document.getElementById('fvOut');
   var barEl = document.getElementById('bar');
   var legendEl = document.getElementById('legend');
@@ -226,13 +223,11 @@
   function render() {
     var initial = parseMoney(initialInput.value);
     var monthly = parseMoney(monthlyInput.value);
-    var rate = +rateInput.value;
-    var years = +yearsInput.value;
+    var rate = parseFloat(rateInput.value) || 0;
+    var years = parseInt(yearsInput.value, 10) || 1;
 
-    rateValueEl.textContent = rate.toFixed(1) + '%';
-    yearsValueEl.value = years;
-    setFill(rateInput);
-    setFill(yearsInput);
+    setFill(rateSlider);
+    setFill(yearsSlider);
 
     var rows = projectGrowth(initial, monthly, rate, years);
     if (!rows.length) return;
@@ -363,23 +358,67 @@
   copySummaryBtn.addEventListener('click', function () {
     if (!lastResult) return;
     var s = lastResult;
-    var text = 'Investment Growth Calculator \u2014 Wagner Wealth and Health\n' +
+    var text = 'Investment Growth \u2014 Wagner Wealth and Health\n' +
       'Starting Balance: ' + fmtMoney(s.initial) + '\n' +
       'Monthly Contribution: ' + fmtMoney(s.monthly) + '\n' +
-      'Expected Annual Return: ' + s.rate.toFixed(1) + '%\n' +
-      'Years: ' + s.years + '\n\n' +
+      'Annual Return: ' + s.rate.toFixed(1) + '%\n' +
+      'Timeline (Years): ' + s.years + '\n\n' +
       'Projected Balance: ' + fmtMoney(s.fv) + '\n' +
       'Total Contributions: ' + fmtMoney(s.totalContributed) + '\n' +
       'Total Growth: ' + fmtMoney(s.totalGrowth);
     copyText(text, copySummaryBtn, 'Summary Copied!');
   });
 
-  [rateInput, yearsInput].forEach(function (el) { el.addEventListener('input', render); });
-  [initialInput, monthlyInput].forEach(function (el) { el.addEventListener('input', render); });
-  yearsValueEl.addEventListener('change', function () {
-    var v = Math.max(1, Math.min(50, parseInt(yearsValueEl.value, 10) || 25));
-    yearsInput.value = v; render();
+  // Event Listeners for Rate Controls
+  rateSlider.addEventListener('input', function(e) {
+    rateInput.value = e.target.value;
+    render();
   });
+  
+  rateInput.addEventListener('input', function(e) {
+    var val = parseFloat(e.target.value);
+    if (val > 12) { val = 12; rateInput.value = 12; }
+    if (val < 0) { val = 0; rateInput.value = 0; }
+    if (!isNaN(val)) rateSlider.value = val;
+    render();
+  });
+  
+  rateInput.addEventListener('blur', function(e) {
+    var val = parseFloat(e.target.value);
+    if (isNaN(val) || val < 0) val = 0;
+    if (val > 12) val = 12;
+    rateInput.value = val.toFixed(1);
+    rateSlider.value = val;
+    render();
+  });
+
+  // Event Listeners for Years Controls
+  yearsSlider.addEventListener('input', function(e) {
+    yearsInput.value = e.target.value;
+    render();
+  });
+  
+  yearsInput.addEventListener('input', function(e) {
+    var val = parseInt(e.target.value, 10);
+    if (val > 50) { val = 50; yearsInput.value = 50; }
+    if (val < 1 && e.target.value !== "") { 
+      // allow temporary empty state while typing 
+    } else if (!isNaN(val)) {
+      yearsSlider.value = val;
+    }
+    render();
+  });
+  
+  yearsInput.addEventListener('blur', function(e) {
+    var val = parseInt(e.target.value, 10);
+    if (isNaN(val) || val < 1) val = 1;
+    if (val > 50) val = 50;
+    yearsInput.value = val;
+    yearsSlider.value = val;
+    render();
+  });
+
+  [initialInput, monthlyInput].forEach(function (el) { el.addEventListener('input', render); });
   initialInput.addEventListener('blur', function () { initialInput.value = parseMoney(initialInput.value).toLocaleString('en-US'); });
   monthlyInput.addEventListener('blur', function () { monthlyInput.value = parseMoney(monthlyInput.value).toLocaleString('en-US'); });
 
