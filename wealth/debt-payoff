@@ -3,16 +3,28 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Loan Payoff Calculator | Wagner Wealth and Health</title>
+<title>Debt Payoff | Wagner Wealth and Health</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!-- Load Chart.js Library -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
   :root {
-    --ink-900: #FFFFFF; --ink-800: #F8F9FA; --ink-700: #E9ECEF; --line: #DEE2E6;
-    --text-hi: #000000; --text-lo: #5C6C7B; --text-muted: #5C6C7B; --accent: #2F6FA8;
-    --gold: #3F6EA6; --rust: #6C93BE; --steel: #C17B3A; --good: #3D7A4A; --warn: #B4694B;
-    --font-display: 'Open Sans', sans-serif; --font-body: 'Open Sans', sans-serif; --font-mono: 'Open Sans', sans-serif;
+    --ink-900: #FFFFFF;
+    --ink-800: #F8F9FA;
+    --ink-700: #E9ECEF;
+    --line: #DEE2E6;
+    --text-hi: #000000;
+    --text-lo: #5C6C7B;
+    --text-muted: #5C6C7B;
+    --accent: #2F6FA8;
+    --principal-color: #3F6EA6; /* Blue for Principal */
+    --interest-color: #C17B3A;  /* Orange for Interest */
+    --font-display: 'Open Sans', sans-serif;
+    --font-body: 'Open Sans', sans-serif;
+    --font-mono: 'Open Sans', sans-serif;
+    --slider-color: #5C6C7B; 
   }
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; }
@@ -20,7 +32,12 @@
   .card { max-width: 640px; margin: 0 auto; background: var(--ink-800); border: 1px solid var(--line); border-radius: 18px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
   .card__body { padding: 40px; }
   @media (max-width: 520px) { .card__body { padding: 28px 22px; } }
-  @media (min-width: 900px) { body { padding: 56px 24px; } .card { max-width: 820px; } .card__body { padding: 52px 60px; } h1 { font-size: 36px; } }
+  @media (min-width: 900px) {
+    body { padding: 56px 24px; }
+    .card { max-width: 820px; }
+    .card__body { padding: 52px 60px; }
+    h1 { font-size: 36px; }
+  }
   .header-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; margin-bottom: 28px; }
   @media (max-width: 480px) { .header-row { flex-direction: column-reverse; align-items: flex-start; gap: 14px; } .brand-logo { height: 48px; } }
   .header-text { flex: 1 1 auto; min-width: 0; }
@@ -31,47 +48,72 @@
   .brand-header:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
   .brand-logo { height: 90px; width: auto; display: block; }
 
-  .control-block { margin-bottom: 26px; }
+  .control-block { margin-bottom: 26px; width: 100%; }
   .control-label-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; }
   .control-label-row label { font-size: 13px; font-weight: 600; letter-spacing: 0.02em; color: var(--text-hi); }
-  .control-value { font-family: var(--font-mono); font-size: 13px; color: var(--accent); font-weight: 600; }
-
-  input[type="range"].slider { -webkit-appearance: none; appearance: none; width: 100%; height: 6px; border-radius: 999px; background: var(--ink-700); outline: none; cursor: pointer; margin: 0; }
-  input[type="range"].slider:focus-visible { outline: 2px solid var(--accent); outline-offset: 5px; }
-  input[type="range"].slider::-webkit-slider-runnable-track { height: 6px; border-radius: 999px; background: transparent; }
-  input[type="range"].slider::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; margin-top: -6px; border-radius: 50%; background: #FFFFFF; border: 3px solid var(--accent); box-shadow: 0 2px 4px rgba(0,0,0,0.15); cursor: pointer; }
-  input[type="range"].slider::-moz-range-track { height: 6px; border-radius: 999px; background: transparent; }
-  input[type="range"].slider::-moz-range-thumb { width: 14px; height: 14px; border-radius: 50%; background: #FFFFFF; border: 3px solid var(--accent); box-shadow: 0 2px 4px rgba(0,0,0,0.15); cursor: pointer; }
-
-  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; margin-bottom: 8px; }
-  @media (max-width: 480px) { .row2 { grid-template-columns: 1fr; gap: 22px; } }
-
-  .money-wrap { position: relative; }
+  
+  .money-wrap { position: relative; width: 100%; }
   .money-prefix { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); font-family: var(--font-mono); font-size: 18px; color: var(--text-muted); pointer-events: none; }
-  .money-input { width: 100%; background: #FFFFFF; border: 1px solid var(--line); border-radius: 10px; color: var(--text-hi); font-family: var(--font-mono); font-size: 18px; font-weight: 500; padding: 12px 16px 12px 30px; outline: none; box-shadow: inset 0 1px 2px rgba(0,0,0,0.05); }
+  .money-input {
+    width: 100%; background: #FFFFFF; border: 1px solid var(--line); border-radius: 10px; color: var(--text-hi);
+    font-family: var(--font-mono); font-size: 18px; font-weight: 500; padding: 12px 16px 12px 30px; outline: none;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
+  }
   .money-input:focus-visible { border-color: var(--accent); outline: 2px solid var(--accent); outline-offset: 2px; }
 
+  /* 3-Column layout for desktop */
+  .row3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-bottom: 24px; }
+  .row3 .control-block { margin-bottom: 0; }
+  @media (max-width: 650px) { .row3 { grid-template-columns: 1fr; gap: 22px; } }
+
+  .extra-payment-wrap { width: 120px; }
+  .extra-payment-input { padding: 8px 12px 8px 30px; font-size: 15px; }
+
+  input[type="range"].slider { -webkit-appearance: none; appearance: none; width: 100%; height: 6px; border-radius: 999px; background: var(--ink-700); outline: none; cursor: pointer; margin: 10px 0 0 0; }
+  input[type="range"].slider:focus-visible { outline: 2px solid var(--slider-color); outline-offset: 5px; }
+  input[type="range"].slider::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; margin-top: -6px; border-radius: 50%; background: #FFFFFF; border: 3px solid var(--slider-color); box-shadow: 0 2px 4px rgba(0,0,0,0.15); cursor: pointer; }
+  input[type="range"].slider::-moz-range-thumb { width: 14px; height: 14px; border-radius: 50%; background: #FFFFFF; border: 3px solid var(--slider-color); box-shadow: 0 2px 4px rgba(0,0,0,0.15); cursor: pointer; }
+
   .results { margin-top: 34px; padding-top: 24px; border-top: 2px solid var(--line); }
+  
+  /* Top Stat Row replacing the massive headlines */
   .stat-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 22px; }
   @media (max-width: 480px) { .stat-row { grid-template-columns: 1fr; } }
+  .stat { text-align: left; }
   .stat .label { font-size: 12px; color: var(--text-lo); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; margin-bottom: 6px; }
   .stat .value { font-family: var(--font-mono); font-size: 28px; font-weight: 700; color: var(--text-hi); }
-  .stat .value.good { color: var(--good); }
+  
+  /* Savings Tooltip Box */
+  .savings-box { 
+    background-color: #F1F5F9; 
+    border: 1px solid #E2E8F0; 
+    border-radius: 10px; 
+    padding: 16px 20px; 
+    font-size: 14px; 
+    color: #334155; 
+    line-height: 1.5; 
+    margin-bottom: 28px;
+    text-align: center;
+    position: relative;
+  }
+  /* Optional caret pointing up */
+  .savings-box::before {
+    content: ''; position: absolute; top: -7px; left: 50%; transform: translateX(-50%);
+    border-width: 0 7px 7px 7px; border-style: solid; border-color: transparent transparent #E2E8F0 transparent;
+  }
+  .savings-box::after {
+    content: ''; position: absolute; top: -5px; left: 50%; transform: translateX(-50%);
+    border-width: 0 6px 6px 6px; border-style: solid; border-color: transparent transparent #F1F5F9 transparent;
+  }
+  .savings-box strong { font-weight: 700; color: #0F172A; }
 
-  .compare { margin-top: 8px; padding: 14px 16px; background: var(--ink-700); border-radius: 10px; font-size: 13px; color: var(--text-lo); }
-  .compare b { color: var(--text-hi); }
-  .warning { margin-top: 12px; padding: 12px 14px; background: rgba(180,105,75,0.08); border: 1px solid rgba(180,105,75,0.3); border-radius: 10px; font-size: 13px; color: var(--warn); display: none; }
+  .chart-container { margin-top: 10px; margin-bottom: 30px; position: relative; height: 250px; width: 100%; }
 
   table.table { width: 100%; border-collapse: collapse; margin-top: 22px; }
   .table th { text-align: right; font-size: 11px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-lo); padding: 8px 10px; border-bottom: 2px solid var(--line); }
   .table th:first-child { text-align: left; }
   .table td { text-align: right; font-family: var(--font-mono); font-size: 12.5px; color: var(--text-hi); padding: 7px 10px; border-bottom: 1px solid var(--line); }
   .table td:first-child { text-align: left; color: var(--text-lo); }
-
-  .toolbar { display: flex; flex-wrap: wrap; gap: 10px; margin: 28px 0 0; }
-  .btn { font-family: var(--font-body); font-size: 12.5px; font-weight: 600; color: var(--text-lo); background: #FFFFFF; border: 1px solid var(--line); border-radius: 8px; padding: 9px 14px; cursor: pointer; transition: border-color 150ms ease, color 150ms ease; }
-  .btn:hover { border-color: var(--accent); color: var(--accent); }
-  .btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
   .foot { font-size: 11.5px; color: var(--text-muted); margin: 28px 0 0; padding-top: 20px; border-top: 1px solid var(--line); }
 </style>
@@ -81,67 +123,76 @@
   <div class="card__body">
     <div class="header-row">
       <div class="header-text">
-        <h1>Loan Payoff Calculator</h1>
-        <p class="dek">See how long a loan takes to pay off, and how much extra payments could save you.</p>
+        <h1>Debt Payoff</h1>
+        <p class="dek">See how long it will take to pay down debt, and how much extra payments could save you.</p>
       </div>
       <a class="brand-header" href="https://wagnerwh.com" target="_blank" rel="noopener noreferrer" aria-label="Wagner Wealth and Health home">
         <img class="brand-logo" src="https://assets.wagnerwh.com/logo-complete.png" alt="Wagner Wealth and Health" loading="lazy">
       </a>
     </div>
 
-    <div class="control-block">
-      <div class="control-label-row"><label for="balance">Loan Balance</label></div>
-      <div class="money-wrap"><span class="money-prefix">$</span>
-        <input type="text" inputmode="numeric" id="balance" class="money-input" value="20,000">
-      </div>
-    </div>
-
-    <div class="row2">
+    <!-- 3 Column Layout for Desktop -->
+    <div class="row3">
       <div class="control-block">
-        <div class="control-label-row">
-          <label for="rate">Interest Rate (APR)</label>
-          <span class="control-value" id="rateValue">6.5%</span>
+        <div class="control-label-row"><label for="balance">Loan Balance</label></div>
+        <div class="money-wrap"><span class="money-prefix">$</span>
+          <input type="text" inputmode="numeric" id="balance" class="money-input" value="10,000">
         </div>
-        <input type="range" id="rate" class="slider" min="0" max="25" step="0.25" value="6.5">
       </div>
+      
+      <div class="control-block">
+        <div class="control-label-row"><label for="rate">Interest Rate</label></div>
+        <div class="money-wrap"><span class="money-prefix">%</span>
+          <input type="text" inputmode="numeric" id="rate" class="money-input" value="5.0" style="padding-left: 36px;">
+        </div>
+      </div>
+
       <div class="control-block">
         <div class="control-label-row"><label for="payment">Monthly Payment</label></div>
         <div class="money-wrap"><span class="money-prefix">$</span>
-          <input type="text" inputmode="numeric" id="payment" class="money-input" value="450">
+          <input type="text" inputmode="numeric" id="payment" class="money-input" value="200">
         </div>
       </div>
     </div>
 
-    <div class="control-block">
-      <div class="control-label-row">
-        <label for="extra">Extra Monthly Payment</label>
-        <span class="control-value" id="extraValue">$0</span>
+    <div class="control-block" style="margin-top: 12px;">
+      <div class="control-label-row" style="align-items: center;">
+        <label for="extraPaymentInput">Extra Monthly Payment</label>
+        <div class="money-wrap extra-payment-wrap">
+          <span class="money-prefix" style="font-size: 15px;">$</span>
+          <input type="number" id="extraPaymentInput" class="money-input extra-payment-input" value="0" min="0">
+        </div>
       </div>
-      <input type="range" id="extra" class="slider" min="0" max="500" step="10" value="0">
+      <input type="range" id="extraPaymentSlider" class="slider" min="0" max="1000" step="10" value="0">
     </div>
-
-    <div class="warning" id="warningBox">This payment doesn't cover the monthly interest, so the loan would never pay off. Increase the payment.</div>
 
     <div class="results">
       <div class="stat-row">
         <div class="stat">
           <div class="label">Payoff Time</div>
-          <div class="value" id="payoffTimeOut">&mdash;</div>
+          <div class="value" id="monthsOut">0 mo</div>
         </div>
         <div class="stat">
           <div class="label">Total Interest Paid</div>
-          <div class="value" id="totalInterestOut">&mdash;</div>
+          <div class="value" id="interestOut">$0</div>
         </div>
       </div>
-      <div class="compare" id="compareBox"></div>
+      
+      <!-- Savings Highlight Tooltip Box -->
+      <div id="savingsBox" class="savings-box" style="display: none;">
+        Paying an extra <strong id="extraAmtMsg">$0</strong>/mo pays this off <strong id="timeSavedMsg">0 mo</strong> sooner and saves <strong id="interestSavedMsg">$0</strong> in interest.
+      </div>
+
+      <!-- Chart.js Canvas -->
+      <div class="chart-container">
+          <canvas id="payoffChart"></canvas>
+      </div>
+
+      <!-- Detail Table -->
       <table class="table">
         <thead><tr><th>Year</th><th>Paid</th><th>Interest</th><th>Balance</th></tr></thead>
         <tbody id="tableBody"></tbody>
       </table>
-    </div>
-
-    <div class="toolbar">
-      <button type="button" class="btn" id="copySummaryBtn">Copy Summary</button>
     </div>
 
     <p class="foot">Wagner Wealth and Health &middot; Education Tool &middot; Not Personalized Financial Advice</p>
@@ -149,145 +200,214 @@
 </div>
 <script>
 (function () {
-  var balanceInput = document.getElementById('balance');
-  var rateInput = document.getElementById('rate');
-  var rateValueEl = document.getElementById('rateValue');
-  var paymentInput = document.getElementById('payment');
-  var extraInput = document.getElementById('extra');
-  var extraValueEl = document.getElementById('extraValue');
-  var warningBox = document.getElementById('warningBox');
-  var payoffTimeOut = document.getElementById('payoffTimeOut');
-  var totalInterestOut = document.getElementById('totalInterestOut');
-  var compareBox = document.getElementById('compareBox');
+  var balEl = document.getElementById('balance');
+  var rateEl = document.getElementById('rate');
+  var pmtEl = document.getElementById('payment');
+  var extraPmtInput = document.getElementById('extraPaymentInput');
+  var extraPmtSlider = document.getElementById('extraPaymentSlider');
+  
+  var monthsOut = document.getElementById('monthsOut');
+  var interestOut = document.getElementById('interestOut');
+  
+  var savingsBox = document.getElementById('savingsBox');
+  var extraAmtMsg = document.getElementById('extraAmtMsg');
+  var timeSavedMsg = document.getElementById('timeSavedMsg');
+  var interestSavedMsg = document.getElementById('interestSavedMsg');
+  
   var tableBodyEl = document.getElementById('tableBody');
-  var copySummaryBtn = document.getElementById('copySummaryBtn');
-
-  var lastResult = null;
+  var payoffChartInstance = null;
 
   function parseMoney(raw) {
-    var digits = String(raw).replace(/[^0-9]/g, '');
-    return digits ? parseInt(digits, 10) : 0;
+    var num = parseFloat(String(raw).replace(/[^0-9.]/g, ''));
+    return isNaN(num) ? 0 : num;
   }
-  function fmtMoney(n) { return '$' + Math.round(n).toLocaleString('en-US'); }
-  function setFill(input) {
-    var min = +input.min, max = +input.max, val = +input.value;
-    var pct = ((val - min) / (max - min)) * 100;
-    input.style.background = 'linear-gradient(to right, var(--accent) 0%, var(--accent) ' + pct + '%, var(--ink-700) ' + pct + '%, var(--ink-700) 100%)';
+  
+  function fmtMoney(n) { 
+    return '$' + Math.round(n).toLocaleString('en-US'); 
+  }
+  
+  function formatTime(totalMonths) {
+    if (!isFinite(totalMonths)) return "Never";
+    if (totalMonths === 0) return "0 mo";
+    var yrs = Math.floor(totalMonths / 12);
+    var mos = totalMonths % 12;
+    var str = "";
+    if (yrs > 0) str += yrs + " yr ";
+    if (mos > 0) str += mos + " mo";
+    return str.trim();
   }
 
-  // Simulates month-by-month amortization; returns null if the payment never covers interest.
-  function amortize(balance, annualRatePct, monthlyPayment) {
-    var r = (annualRatePct / 100) / 12;
-    if (monthlyPayment <= balance * r && r > 0) return null;
-    var rows = [];
-    var bal = balance;
-    var totalPaid = 0, totalInterest = 0;
-    var month = 0;
-    var yearPaid = 0, yearInterest = 0;
-    while (bal > 0.01 && month < 1200) {
-      var interest = bal * r;
-      var payment = Math.min(monthlyPayment, bal + interest);
-      var principal = payment - interest;
-      bal -= principal;
-      totalPaid += payment;
-      totalInterest += interest;
-      yearPaid += payment;
-      yearInterest += interest;
-      month++;
-      if (month % 12 === 0 || bal <= 0.01) {
-        rows.push({ year: Math.ceil(month / 12), paid: yearPaid, interest: yearInterest, balance: Math.max(0, bal) });
-        yearPaid = 0; yearInterest = 0;
+  function calculatePayoff(balance, rate, payment) {
+    var r = (rate / 100) / 12;
+    var months = 0;
+    var totalInterest = 0;
+    var currentBalance = balance;
+    var annualData = [];
+
+    if (payment <= currentBalance * r && currentBalance > 0) {
+      return { months: Infinity, interest: Infinity, annualData: [] };
+    }
+    
+    var yearPaid = 0;
+    var yearInterest = 0;
+
+    while (currentBalance > 0 && months < 1200) {
+      months++;
+      var interestForMonth = currentBalance * r;
+      var principalForMonth = payment - interestForMonth;
+
+      if (principalForMonth > currentBalance) {
+        principalForMonth = currentBalance;
+        payment = principalForMonth + interestForMonth; // Final adjusted payment
+      }
+      
+      totalInterest += interestForMonth;
+      currentBalance -= principalForMonth;
+      
+      yearPaid += (principalForMonth + interestForMonth);
+      yearInterest += interestForMonth;
+
+      if (months % 12 === 0 || currentBalance <= 0) {
+        annualData.push({
+          year: Math.ceil(months / 12),
+          paid: yearPaid,
+          interest: yearInterest,
+          balance: currentBalance,
+          cumulativePrincipal: balance - currentBalance,
+          cumulativeInterest: totalInterest
+        });
+        yearPaid = 0;
+        yearInterest = 0;
+        if (currentBalance <= 0) break;
       }
     }
-    return { months: month, totalPaid: totalPaid, totalInterest: totalInterest, rows: rows };
-  }
-
-  function fmtMonths(m) {
-    var years = Math.floor(m / 12), months = m % 12;
-    if (years === 0) return months + ' mo';
-    if (months === 0) return years + ' yr';
-    return years + ' yr ' + months + ' mo';
+    return { months: months, interest: totalInterest, annualData: annualData };
   }
 
   function render() {
-    var balance = parseMoney(balanceInput.value);
-    var rate = +rateInput.value;
-    var payment = parseMoney(paymentInput.value);
-    var extra = +extraInput.value;
+    var b = parseMoney(balEl.value);
+    var r = parseMoney(rateEl.value);
+    var p = parseMoney(pmtEl.value);
+    var extra = parseFloat(extraPmtInput.value) || 0;
 
-    rateValueEl.textContent = rate.toFixed(2) + '%';
-    extraValueEl.textContent = fmtMoney(extra);
-    setFill(rateInput);
-    setFill(extraInput);
+    var basePlan = calculatePayoff(b, r, p);
+    var newPlan = calculatePayoff(b, r, p + extra);
 
-    var base = amortize(balance, rate, payment);
-    var withExtra = extra > 0 ? amortize(balance, rate, payment + extra) : null;
-
-    if (!base) {
-      warningBox.style.display = '';
-      payoffTimeOut.textContent = '\u2014';
-      totalInterestOut.textContent = '\u2014';
-      compareBox.innerHTML = '';
-      tableBodyEl.innerHTML = '';
-      lastResult = null;
-      return;
-    }
-    warningBox.style.display = 'none';
-
-    var active = withExtra || base;
-    payoffTimeOut.textContent = fmtMonths(active.months);
-    totalInterestOut.textContent = fmtMoney(active.totalInterest);
-
-    if (withExtra) {
-      var monthsSaved = base.months - withExtra.months;
-      var interestSaved = base.totalInterest - withExtra.totalInterest;
-      compareBox.innerHTML = 'Paying an extra ' + fmtMoney(extra) + '/mo pays this off <b>' + fmtMonths(monthsSaved) + ' sooner</b> and saves <b>' + fmtMoney(interestSaved) + '</b> in interest versus the base payment alone.';
+    if (newPlan.months === Infinity) {
+      monthsOut.textContent = "Never";
+      interestOut.textContent = "Infinite";
+      savingsBox.style.display = 'none';
     } else {
-      compareBox.innerHTML = '';
+      monthsOut.textContent = formatTime(newPlan.months);
+      interestOut.textContent = fmtMoney(newPlan.interest);
+      
+      if (extra > 0 && basePlan.months !== Infinity) {
+        var savedMos = basePlan.months - newPlan.months;
+        var savedInt = basePlan.interest - newPlan.interest;
+        
+        extraAmtMsg.textContent = fmtMoney(extra);
+        timeSavedMsg.textContent = formatTime(savedMos);
+        interestSavedMsg.textContent = fmtMoney(savedInt);
+        savingsBox.style.display = 'block';
+      } else {
+        savingsBox.style.display = 'none';
+      }
     }
+    
+    // Sync slider visual fill
+    var sliderPct = Math.min((extra / 1000) * 100, 100);
+    extraPmtSlider.style.background = 'linear-gradient(to right, var(--slider-color) ' + sliderPct + '%, var(--ink-700) ' + sliderPct + '%)';
 
+    // Render Table
     tableBodyEl.innerHTML = '';
-    active.rows.forEach(function (r) {
+    newPlan.annualData.forEach(function(r) {
       var tr = document.createElement('tr');
       tr.innerHTML = '<td>' + r.year + '</td><td>' + fmtMoney(r.paid) + '</td><td>' + fmtMoney(r.interest) + '</td><td>' + fmtMoney(r.balance) + '</td>';
       tableBodyEl.appendChild(tr);
     });
 
-    lastResult = { balance: balance, rate: rate, payment: payment, extra: extra, months: active.months, totalInterest: active.totalInterest, totalPaid: active.totalPaid };
+    // --- Chart.js Rendering ---
+    var labels = newPlan.annualData.map(d => d.year);
+    var principalData = newPlan.annualData.map(d => d.cumulativePrincipal);
+    var interestData = newPlan.annualData.map(d => d.cumulativeInterest);
+    
+    var computedStyles = getComputedStyle(document.documentElement);
+    var principalColor = computedStyles.getPropertyValue('--principal-color').trim();
+    var interestColor = computedStyles.getPropertyValue('--interest-color').trim();
+    var textColor = computedStyles.getPropertyValue('--text-lo').trim();
+
+    var ctx = document.getElementById('payoffChart').getContext('2d');
+    if (payoffChartInstance) {
+        payoffChartInstance.destroy();
+    }
+    payoffChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [
+                { label: 'Cumulative Principal Paid', data: principalData, backgroundColor: principalColor },
+                { label: 'Cumulative Interest Paid', data: interestData, backgroundColor: interestColor }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index' },
+            scales: {
+                x: { 
+                    stacked: true, 
+                    grid: { display: false },
+                    title: { display: true, text: 'Year', color: textColor, font: { weight: '600' } }
+                },
+                y: { 
+                    stacked: true, 
+                    ticks: {
+                        color: textColor,
+                        callback: function(value) {
+                            if (value >= 1000000) return '$' + (value / 1000000).toFixed(1).replace('.0', '') + 'M';
+                            if (value >= 1000) return '$' + Math.round(value / 1000) + 'K';
+                            return '$' + value.toLocaleString();
+                        }
+                    }
+                }
+            },
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) { label += ': '; }
+                            if (context.parsed.y !== null) {
+                                label += fmtMoney(context.parsed.y);
+                            }
+                            return label;
+                        }
+                    }
+                }
+            }
+        }
+    });
   }
 
-  function copyText(text, btn, successLabel) {
-    var original = btn.textContent;
-    function flash() { btn.textContent = successLabel; setTimeout(function () { btn.textContent = original; }, 1800); }
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(text).then(flash, function () { fallbackCopy(text); flash(); });
-    } else { fallbackCopy(text); flash(); }
-  }
-  function fallbackCopy(text) {
-    var ta = document.createElement('textarea');
-    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
-    document.body.appendChild(ta); ta.focus(); ta.select();
-    try { document.execCommand('copy'); } catch (e) {}
-    document.body.removeChild(ta);
-  }
-
-  copySummaryBtn.addEventListener('click', function () {
-    if (!lastResult) return;
-    var s = lastResult;
-    var text = 'Loan Payoff Calculator \u2014 Wagner Wealth and Health\n' +
-      'Loan Balance: ' + fmtMoney(s.balance) + '\n' +
-      'Interest Rate: ' + s.rate.toFixed(2) + '%\n' +
-      'Monthly Payment: ' + fmtMoney(s.payment) + (s.extra > 0 ? ' + ' + fmtMoney(s.extra) + ' extra' : '') + '\n\n' +
-      'Payoff Time: ' + fmtMonths(s.months) + '\n' +
-      'Total Interest Paid: ' + fmtMoney(s.totalInterest) + '\n' +
-      'Total Paid: ' + fmtMoney(s.totalPaid);
-    copyText(text, copySummaryBtn, 'Summary Copied!');
+  // Event Listeners
+  extraPmtSlider.addEventListener('input', function(e) { 
+    extraPmtInput.value = e.target.value; 
+    render(); 
+  });
+  
+  extraPmtInput.addEventListener('input', function(e) { 
+    var val = parseFloat(e.target.value) || 0;
+    extraPmtSlider.value = Math.min(val, 1000);
+    render(); 
   });
 
-  [rateInput, extraInput].forEach(function (el) { el.addEventListener('input', render); });
-  [balanceInput, paymentInput].forEach(function (el) { el.addEventListener('input', render); });
-  balanceInput.addEventListener('blur', function () { balanceInput.value = parseMoney(balanceInput.value).toLocaleString('en-US'); });
-  paymentInput.addEventListener('blur', function () { paymentInput.value = parseMoney(paymentInput.value).toLocaleString('en-US'); });
+  [balEl, rateEl, pmtEl].forEach(function(el) { 
+    el.addEventListener('input', render); 
+  });
+  
+  balEl.addEventListener('blur', function() { balEl.value = parseMoney(balEl.value).toLocaleString('en-US'); });
+  pmtEl.addEventListener('blur', function() { pmtEl.value = parseMoney(pmtEl.value).toLocaleString('en-US'); });
 
   render();
 })();
